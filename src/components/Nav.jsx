@@ -1,0 +1,54 @@
+import { useEffect, useState } from 'react'
+
+export default function Nav({ name }) {
+  const [open, setOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [open])
+
+  function scrollTo(id) {
+    setOpen(false)
+    setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+    }, 320)
+  }
+
+  return (
+    <>
+      <nav className={`nav${scrolled ? ' scrolled' : ''}`}>
+        <span className="nav-wordmark">{name || 'Tyrese Mosley'}</span>
+        <button
+          className={`hamburger${open ? ' open' : ''}`}
+          onClick={() => setOpen(v => !v)}
+          aria-label={open ? 'Close menu' : 'Open menu'}
+        >
+          <span className="hline" />
+          <span className="hline" />
+          <span className="hline" />
+        </button>
+      </nav>
+
+      <div className={`nav-overlay${open ? ' open' : ''}`} onClick={() => setOpen(false)} />
+
+      <div className={`nav-panel${open ? ' open' : ''}`}>
+        <div className="nav-panel-links">
+          {[['about', 'About'], ['projects', 'Projects'], ['resume', 'Resume']].map(([id, label]) => (
+            <button key={id} className="nav-link-btn" onClick={() => scrollTo(id)}>
+              {label}
+            </button>
+          ))}
+        </div>
+        <div className="nav-panel-foot">Tyrese Mosley</div>
+      </div>
+    </>
+  )
+}

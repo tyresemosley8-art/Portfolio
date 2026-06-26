@@ -1,0 +1,425 @@
+import { useState, useEffect, useRef } from 'react'
+import { getGithubConfig, saveGithubConfig, clearGithubConfig, saveContentToGithub } from '../lib/github'
+
+const PIN_KEY = 'portfolio_admin_pin'
+const DEFAULT_PIN = '1234'
+
+function getPin() {
+  return localStorage.getItem(PIN_KEY) || DEFAULT_PIN
+}
+
+export default function Admin({ content, onSave, onClose, showToast }) {
+  const [view, setView] = useState('pin') // 'pin' | 'github-setup' | 'main'
+  const [pin, setPin] = useState('')
+  const [pinShake, setPinShake] = useState(false)
+  const [ec, setEc] = useState(() => JSON.parse(JSON.stringify(content))) // edit copy
+  const [saving, setSaving] = useState(false)
+  const [tab, setTab] = useState('hero')
+  const [addingProj, setAddingProj] = useState(false)
+  const [editProjId, setEditProjId] = useState(null)
+  const [newProj, setNewProj] = useState({ title: '', description: '', stack: '', link: '' })
+  const [ghForm, setGhForm] = useState({ token: '', owner: '', repo: '' })
+  const pinRef = useRef()
+
+  useEffect(() => {
+    if (view === 'pin') pinRef.current?.focus()
+  }, [view])
+
+  function submitPin(e) {
+    e.preventDefault()
+    if (pin === getPin()) {
+      const cfg = getGithubConfig()
+      setPin('')
+      setView(cfg?.token ? 'main' : 'github-setup')
+    } else {
+      setPinShake(true)
+      setPin('')
+      setTimeout(() => setPinShake(false), 500)
+    }
+  }
+
+  function submitGithub(e) {
+    e.preventDefault()
+    saveGithubConfig(ghForm)
+    setView('main')
+  }
+
+  async function handleSave() {
+    setSaving(true)
+    try {
+      await saveContentToGithub(ec)
+      onSave(ec)
+      showToast('Changes saved & deployed ✓')
+      onClose()
+    } catch (err) {
+      onSave(ec)
+      localStorage.setItem('portfolio_content', JSON.stringify(ec))
+      showToast('Saved locally — check GitHub config', 'warn')
+      setSaving(false)
+    }
+  }
+
+  function readFile(file, cb) {
+    const reader = new FileReader()
+    reader.onload = e => cb(e.target.result)
+    reader.readAsDataURL(file)
+  }
+
+  function updateEc(path, val) {
+    setEc(prev => {
+      const next = JSON.parse(JSON.stringify(prev))
+      const keys = path.split('.')
+      let obj = next
+      for (let i = 0; i < keys.length - 1; i++) obj = obj[keys[i]]
+      obj[keys[keys.length - 1]] = val
+      return next
+    })
+  }
+
+  function addProject() {
+    if (!newProj.title.trim()) return
+    const p = {
+      id: Date.now().toString(),
+      title: newProj.title.trim(),
+      description: newProj.description.trim(),
+      stack: newProj.stack.split(',').map(s => s.trim()).filter(Boolean),
+      image: null,
+      link: newProj.link.trim() || null,
+    }
+    setEc(prev => ({ ...prev, projects: [...prev.projects, p] }))
+    setNewProj({ title: '', description: '', stack: '', link: '' })
+    setAddingProj(false)
+  }
+
+  function delProject(id) {
+    setEc(prev => ({ ...prev, projects: prev.projects.filter(p => p.id !== id) }))
+    if (editProjId === id) setEditProjId(null)
+  }
+
+  function updateProject(id, field, val) {
+    setEc(prev => ({
+      ...prev,
+      projects: prev.projects.map(p => p.id === id ? { ...p, [field]: val } : p),
+    }))
+  }
+
+  // ── PIN View ──────────────────────────────────────────────
+  if (view === 'pin') {
+    return (
+      <div className="adm-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+        <div className="adm-modal">
+          <div className="adm-header">
+            <span className="adm-header-title">Admin</span>
+            <button className="adm-x" onClick={onClose}>✕</button>
+          </div>
+          <div className="adm-body">
+            <form className="pin-view" onSubmit={submitPin}>
+              <p className="pin-heading">Enter PIN</p>
+              <p className="pin-sub">Default PIN is 1234</p>
+              <input
+                ref={pinRef}
+                type="password"
+                maxLength={8}
+                value={pin}
+                onChange={e => setPin(e.target.value)}
+                className={`pin-input${pinShake ? ' shake' : ''}`}
+                placeholder="••••"
+                autoComplete="off"
+              />
+              {pinShake && <p className="pin-err">Incorrect PIN</p>}
+              <button type="submit" className="btn-primary">Continue →</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── GitHub Setup View ─────────────────────────────────────
+  if (view === 'github-setup') {
+    return (
+      <div className="adm-overlay">
+        <div className="adm-modal">
+          <div className="adm-header">
+            <span className="adm-header-title">Connect GitHub</span>
+            <button className="adm-x" onClick={onClose}>✕</button>
+          </div>
+          <div className="adm-body">
+            <div className="setup-view">
+              <p className="setup-heading">One-time setup</p>
+              <p className="setup-desc">
+                Every time you save, this app commits <code>content.json</code> to your GitHub repo,
+                and Vercel auto-redeploys the site. Create a Personal Access Token at{' '}
+                <strong>github.com → Settings → Developer settings → Personal access tokens</strong>{' '}
+                with <code>repo</code> scope.
+              </p>
+              <form style={{ display: 'flex', flexDirection: 'column', gap: 14 }} onSubmit={submitGithub}>
+                <div className="fgroup">
+                  <label className="flabel">Personal Access Token</label>
+                  <input
+                    type="password" className="finput" placeholder="ghp_..."
+                    value={ghForm.token}
+                    onChange={e => setGhForm(p => ({ ...p, token: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="fgroup">
+                  <label className="flabel">Your GitHub username</label>
+                  <input
+                    className="finput" placeholder="tyresemosley"
+                    value={ghForm.owner}
+                    onChange={e => setGhForm(p => ({ ...p, owner: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="fgroup">
+                  <label className="flabel">Repo name</label>
+                  <span className="fhint">Create an empty repo on GitHub first, then enter the name here</span>
+                  <input
+                    className="finput" placeholder="portfolio"
+                    value={ghForm.repo}
+                    onChange={e => setGhForm(p => ({ ...p, repo: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: 10, paddingTop: 6 }}>
+                  <button type="submit" className="btn-primary">Connect & Continue</button>
+                  <button
+                    type="button" className="btn-sm"
+                    onClick={() => { saveGithubConfig({ token: '', owner: '', repo: '' }); setView('main') }}
+                  >
+                    Skip for now
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Main Admin View ────────────────────────────────────────
+  return (
+    <div className="adm-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="adm-modal">
+        <div className="adm-header">
+          <span className="adm-header-title">Admin Panel</span>
+          <button className="adm-x" onClick={onClose}>✕</button>
+        </div>
+
+        <div className="adm-tabs">
+          {['hero', 'about', 'projects', 'resume'].map(t => (
+            <button
+              key={t}
+              className={`adm-tab${tab === t ? ' on' : ''}`}
+              onClick={() => setTab(t)}
+            >
+              {t.charAt(0).toUpperCase() + t.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        <div className="adm-body">
+
+          {/* ── HERO TAB ── */}
+          {tab === 'hero' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div className="fgroup">
+                <label className="flabel">Name</label>
+                <input className="finput" value={ec.hero.name}
+                  onChange={e => updateEc('hero.name', e.target.value)} />
+              </div>
+              <div className="fgroup">
+                <label className="flabel">Subtitle / tagline</label>
+                <input className="finput" value={ec.hero.subtitle}
+                  onChange={e => updateEc('hero.subtitle', e.target.value)} />
+              </div>
+              <div className="fgroup">
+                <label className="flabel">Profile photo</label>
+                <input type="file" accept="image/*" id="photo-up" style={{ display: 'none' }}
+                  onChange={e => readFile(e.target.files[0], v => updateEc('profilePhoto', v))} />
+                <label htmlFor="photo-up" className="upload-btn">
+                  {ec.profilePhoto ? '↺ Change Photo' : '+ Upload Photo'}
+                </label>
+                {ec.profilePhoto && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
+                    <img src={ec.profilePhoto} alt="" style={{ width: 64, height: 64, borderRadius: 10, objectFit: 'cover' }} />
+                    <button className="btn-sm danger" onClick={() => updateEc('profilePhoto', null)}>Remove</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── ABOUT TAB ── */}
+          {tab === 'about' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div className="fgroup">
+                <label className="flabel">Section heading</label>
+                <input className="finput"
+                  value={ec.about.heading || ''}
+                  placeholder="Who I am"
+                  onChange={e => updateEc('about.heading', e.target.value)} />
+              </div>
+              <div className="fgroup">
+                <label className="flabel">Bio paragraph</label>
+                <textarea className="ftextarea" rows={5}
+                  value={ec.about.bio}
+                  onChange={e => updateEc('about.bio', e.target.value)} />
+              </div>
+              <div className="fgroup">
+                <label className="flabel">Journey paragraph</label>
+                <textarea className="ftextarea" rows={5}
+                  value={ec.about.journey}
+                  onChange={e => updateEc('about.journey', e.target.value)} />
+              </div>
+            </div>
+          )}
+
+          {/* ── PROJECTS TAB ── */}
+          {tab === 'projects' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div className="fgroup" style={{ marginBottom: 4 }}>
+                <label className="flabel">Section heading</label>
+                <input className="finput"
+                  value={ec.projectsHeading || ''}
+                  placeholder="Things I've built"
+                  onChange={e => setEc(p => ({ ...p, projectsHeading: e.target.value }))} />
+              </div>
+
+              <div className="proj-list">
+                {ec.projects.map(p => (
+                  editProjId === p.id ? (
+                    <div key={p.id} className="new-proj-form">
+                      <p className="new-proj-form-title">Editing — {p.title}</p>
+                      <input className="finput" placeholder="Title" value={p.title}
+                        onChange={e => updateProject(p.id, 'title', e.target.value)} />
+                      <textarea className="ftextarea" rows={3} placeholder="Description"
+                        value={p.description}
+                        onChange={e => updateProject(p.id, 'description', e.target.value)} />
+                      <input className="finput" placeholder="Stack: React, Node.js, PostgreSQL"
+                        value={p.stack.join(', ')}
+                        onChange={e => updateProject(p.id, 'stack',
+                          e.target.value.split(',').map(s => s.trim()).filter(Boolean))} />
+                      <input className="finput" placeholder="Link (optional)" value={p.link || ''}
+                        onChange={e => updateProject(p.id, 'link', e.target.value || null)} />
+                      <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                        <input type="file" accept="image/*" id={`img-${p.id}`} style={{ display: 'none' }}
+                          onChange={e => readFile(e.target.files[0], v => updateProject(p.id, 'image', v))} />
+                        <label htmlFor={`img-${p.id}`} className="upload-btn" style={{ fontSize: 12 }}>
+                          {p.image ? '↺ Image' : '+ Image'}
+                        </label>
+                        <button className="btn-primary" onClick={() => setEditProjId(null)}>Done</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div key={p.id} className="proj-item">
+                      <div>
+                        <p className="proj-item-name">{p.title}</p>
+                        <p className="proj-item-stack">{p.stack.join(' · ')}</p>
+                      </div>
+                      <div className="proj-item-actions">
+                        <button className="btn-sm" onClick={() => setEditProjId(p.id)}>Edit</button>
+                        <button className="btn-sm danger" onClick={() => delProject(p.id)}>Delete</button>
+                      </div>
+                    </div>
+                  )
+                ))}
+              </div>
+
+              {addingProj ? (
+                <div className="new-proj-form">
+                  <p className="new-proj-form-title">New Project</p>
+                  <input className="finput" placeholder="Title *"
+                    value={newProj.title}
+                    onChange={e => setNewProj(p => ({ ...p, title: e.target.value }))} />
+                  <textarea className="ftextarea" rows={3} placeholder="Description"
+                    value={newProj.description}
+                    onChange={e => setNewProj(p => ({ ...p, description: e.target.value }))} />
+                  <input className="finput" placeholder="Stack: React, Node.js, PostgreSQL"
+                    value={newProj.stack}
+                    onChange={e => setNewProj(p => ({ ...p, stack: e.target.value }))} />
+                  <input className="finput" placeholder="Link (optional)"
+                    value={newProj.link}
+                    onChange={e => setNewProj(p => ({ ...p, link: e.target.value }))} />
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button className="btn-primary" onClick={addProject} disabled={!newProj.title.trim()}>
+                      Add Project
+                    </button>
+                    <button className="btn-sm" onClick={() => setAddingProj(false)}>Cancel</button>
+                  </div>
+                </div>
+              ) : (
+                <button className="upload-btn" style={{ alignSelf: 'flex-start' }}
+                  onClick={() => setAddingProj(true)}>
+                  + Add Project
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* ── RESUME TAB ── */}
+          {tab === 'resume' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div className="fgroup">
+                <label className="flabel">Section heading</label>
+                <input className="finput"
+                  value={ec.resumeHeading || ''}
+                  placeholder="Download my resume"
+                  onChange={e => setEc(p => ({ ...p, resumeHeading: e.target.value }))} />
+              </div>
+              <div className="fgroup">
+                <label className="flabel">Upload PDF</label>
+                <span className="fhint">Stored as base64 in content.json — keep files under 1 MB</span>
+                <input type="file" accept=".pdf,application/pdf" id="resume-up" style={{ display: 'none' }}
+                  onChange={e => readFile(e.target.files[0], v => setEc(p => ({ ...p, resume: v })))} />
+                <label htmlFor="resume-up" className="upload-btn" style={{ marginTop: 6 }}>
+                  {ec.resume ? '↺ Replace Resume' : '+ Upload Resume PDF'}
+                </label>
+                {ec.resume && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
+                    <span style={{ fontSize: 12, color: 'var(--slate)' }}>✓ PDF ready</span>
+                    <button className="btn-sm danger" onClick={() => setEc(p => ({ ...p, resume: null }))}>
+                      Remove
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="fgroup">
+                <label className="flabel">— or paste a URL instead —</label>
+                <input className="finput" placeholder="https://drive.google.com/..."
+                  value={typeof ec.resume === 'string' && ec.resume.startsWith('http') ? ec.resume : ''}
+                  onChange={e => setEc(p => ({ ...p, resume: e.target.value || null }))} />
+              </div>
+            </div>
+          )}
+
+        </div>
+
+        <div className="adm-footer">
+          <div className="adm-meta">
+            <button className="adm-meta-btn" onClick={() => {
+              const p = prompt('New PIN (min 4 digits):')
+              if (p && p.length >= 4) {
+                localStorage.setItem(PIN_KEY, p)
+                showToast('PIN updated')
+              }
+            }}>
+              Change PIN
+            </button>
+            <button className="adm-meta-btn" onClick={() => {
+              clearGithubConfig()
+              setView('github-setup')
+            }}>
+              Reconnect GitHub
+            </button>
+          </div>
+          <button className="adm-save-btn" onClick={handleSave} disabled={saving}>
+            {saving ? '⟳ Saving…' : '↑ Save & Deploy'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
