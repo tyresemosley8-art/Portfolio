@@ -25,7 +25,6 @@ export default function Nav({ name }) {
   return (
     <>
       <nav className={`nav${scrolled ? ' scrolled' : ''}`}>
-        <span className="nav-wordmark">{name || 'Tyrese Mosley'}</span>
         <button
           className={`hamburger${open ? ' open' : ''}`}
           onClick={() => setOpen(v => !v)}
@@ -35,6 +34,7 @@ export default function Nav({ name }) {
           <span className="hline" />
           <span className="hline" />
         </button>
+        <span className="nav-wordmark">{name || 'Tyrese Mosley'}</span>
       </nav>
 
       <div className={`nav-overlay${open ? ' open' : ''}`} onClick={() => setOpen(false)} />
