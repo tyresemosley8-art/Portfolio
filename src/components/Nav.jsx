@@ -40,6 +40,7 @@ export default function Nav({ name }) {
       <div className={`nav-overlay${open ? ' open' : ''}`} onClick={() => setOpen(false)} />
 
       <div className={`nav-panel${open ? ' open' : ''}`}>
+        <button className="nav-panel-close" onClick={() => setOpen(false)} aria-label="Close menu">✕</button>
         <div className="nav-panel-links">
           {[['about', 'About'], ['projects', 'Projects'], ['resume', 'Resume']].map(([id, label]) => (
             <button key={id} className="nav-link-btn" onClick={() => scrollTo(id)}>

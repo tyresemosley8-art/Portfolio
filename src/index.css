@@ -23,7 +23,9 @@ body {
   font-family: 'Inter', -apple-system, sans-serif;
   background: var(--bg);
   color: var(--text);
-  line-height: 1.6;
+  line-height: 1.7;
+  letter-spacing: 0.012em;
+  word-spacing: 0.04em;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
@@ -118,30 +120,39 @@ img { max-width: 100%; display: block; }
 }
 .nav-overlay.open { opacity: 1; pointer-events: all; }
 
-/* Slide panel — from RIGHT */
+/* Slide panel — from LEFT */
 .nav-panel {
-  position: fixed; top: 0; right: 0; bottom: 0; z-index: 200;
+  position: fixed; top: 0; left: 0; bottom: 0; z-index: 200;
   width: min(340px, 85vw);
   background: var(--navy);
   display: flex; flex-direction: column; justify-content: center;
   padding: 72px 52px;
-  transform: translateX(100%);
+  transform: translateX(-100%);
   transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 .nav-panel.open { transform: translateX(0); }
+.nav-panel-close {
+  position: absolute; top: 24px; right: 20px;
+  width: 38px; height: 38px; border-radius: 50%;
+  background: rgba(255,255,255,0.12); border: none;
+  color: white; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.nav-panel-close:hover { background: rgba(255,255,255,0.24); }
 .nav-panel-links { display: flex; flex-direction: column; gap: 4px; }
 .nav-link-btn {
   font-family: 'Clash Display', sans-serif;
-  font-size: 30px; font-weight: 600; letter-spacing: -1px;
+  font-size: 30px; font-weight: 600; letter-spacing: 0.5px; word-spacing: 2px;
   color: rgba(255,255,255,0.55);
   background: none; border: none; text-align: left;
-  padding: 8px 0;
+  padding: 10px 0;
   transition: color 0.2s var(--ease), transform 0.2s var(--ease);
 }
 .nav-link-btn:hover { color: white; transform: translateX(6px); }
 .nav-panel-foot {
   position: absolute; bottom: 36px; left: 52px;
-  font-size: 11px; letter-spacing: 0.8px;
+  font-size: 11px; letter-spacing: 1.5px;
   color: rgba(255,255,255,0.25);
   text-transform: uppercase;
 }
@@ -176,7 +187,7 @@ img { max-width: 100%; display: block; }
   font-family: 'Clash Display', sans-serif;
   font-size: clamp(52px, 7.5vw, 80px);
   font-weight: 700; color: var(--navy);
-  line-height: 1.0; letter-spacing: -2.5px;
+  line-height: 1.05; letter-spacing: -0.5px; word-spacing: 4px;
   margin-bottom: 20px;
   animation: heroName 0.85s var(--ease) forwards;
 }
@@ -186,7 +197,8 @@ img { max-width: 100%; display: block; }
 }
 .hero-subtitle {
   font-size: clamp(15px, 2.2vw, 19px);
-  color: var(--slate); font-weight: 400; line-height: 1.6;
+  color: var(--slate); font-weight: 400; line-height: 1.7;
+  letter-spacing: 0.03em; word-spacing: 0.08em;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   opacity: 0;
   animation: heroSub 0.85s 0.25s var(--ease) forwards;
@@ -239,7 +251,7 @@ img { max-width: 100%; display: block; }
   font-family: 'Clash Display', sans-serif;
   font-size: clamp(30px, 4.5vw, 46px);
   font-weight: 700; color: var(--navy);
-  line-height: 1.08; letter-spacing: -1.2px;
+  line-height: 1.12; letter-spacing: 0.2px; word-spacing: 3px;
   margin-bottom: 52px;
 }
 
@@ -262,8 +274,8 @@ img { max-width: 100%; display: block; }
   box-shadow: var(--shadow-card);
 }
 .about-text { display: flex; flex-direction: column; gap: 20px; }
-.about-bio { font-size: 17px; line-height: 1.8; color: var(--text); }
-.about-journey { font-size: 15px; line-height: 1.85; color: var(--slate); }
+.about-bio { font-size: 17px; line-height: 1.9; color: var(--text); letter-spacing: 0.01em; word-spacing: 0.05em; }
+.about-journey { font-size: 15px; line-height: 1.95; color: var(--slate); letter-spacing: 0.01em; word-spacing: 0.05em; }
 
 /* ── Projects ────────────────────────────────────────────── */
 .projects-grid {
@@ -295,10 +307,11 @@ img { max-width: 100%; display: block; }
 .proj-title {
   font-family: 'Clash Display', sans-serif;
   font-size: 18px; font-weight: 600; color: var(--navy);
-  letter-spacing: -0.3px; margin-bottom: 8px;
+  letter-spacing: 0.2px; word-spacing: 2px; margin-bottom: 10px;
 }
 .proj-desc {
-  font-size: 13.5px; line-height: 1.7; color: var(--slate);
+  font-size: 13.5px; line-height: 1.8; color: var(--slate);
+  letter-spacing: 0.01em; word-spacing: 0.04em;
   margin-bottom: 16px;
 }
 .proj-stack { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
@@ -393,7 +406,8 @@ img { max-width: 100%; display: block; }
 }
 
 .case-para {
-  font-size: 17px; line-height: 1.88; color: var(--text);
+  font-size: 17px; line-height: 1.95; color: var(--text);
+  letter-spacing: 0.012em; word-spacing: 0.06em;
 }
 
 .case-img-wrap { margin: 8px 0; }
