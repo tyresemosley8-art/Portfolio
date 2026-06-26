@@ -60,4 +60,12 @@ export const DEFAULT_CONTENT = {
   resumeHeading: 'Download my resume',
   profilePhoto: null,
   resume: null,
+  experience: [
+    { id: '1', company: 'We Love Philly', role: 'Technology Project Lead', initials: 'WP' },
+    { id: '2', company: 'University of Pittsburgh', role: 'Information Science Student', initials: 'UP' },
+    { id: '3', company: 'AWS', role: 'Cloud Practitioner Certified', initials: 'AWS' },
+    { id: '4', company: 'Google', role: 'Cybersecurity Certificate', initials: 'G' },
+    { id: '5', company: 'NICE Conference', role: 'Cybersecurity Attendee', initials: 'NC' },
+    { id: '6', company: '1PHL Tech', role: 'Conference Attendee', initials: '1P' },
+  ],
 }

@@ -24,6 +24,8 @@ export default function Admin({ content, onSave, onClose, showToast }) {
   const [addingProj, setAddingProj] = useState(false)
   const [editProjId, setEditProjId] = useState(null)
   const [newProj, setNewProj] = useState({ title: '', description: '', stack: '', link: '' })
+  const [addingExp, setAddingExp] = useState(false)
+  const [newExp, setNewExp] = useState({ company: '', role: '', initials: '' })
   const [ghForm, setGhForm] = useState({ token: '', owner: '', repo: '' })
   const pinRef = useRef()
 
@@ -96,6 +98,23 @@ export default function Admin({ content, onSave, onClose, showToast }) {
     setEc(prev => ({ ...prev, projects: [...prev.projects, p] }))
     setNewProj({ title: '', description: '', stack: '', link: '' })
     setAddingProj(false)
+  }
+
+  function addExperience() {
+    if (!newExp.company.trim()) return
+    const item = {
+      id: Date.now().toString(),
+      company: newExp.company.trim(),
+      role: newExp.role.trim(),
+      initials: newExp.initials.trim().slice(0, 3),
+    }
+    setEc(prev => ({ ...prev, experience: [...(prev.experience || []), item] }))
+    setNewExp({ company: '', role: '', initials: '' })
+    setAddingExp(false)
+  }
+
+  function delExperience(id) {
+    setEc(prev => ({ ...prev, experience: (prev.experience || []).filter(e => e.id !== id) }))
   }
 
   function delProject(id) {
@@ -239,7 +258,7 @@ export default function Admin({ content, onSave, onClose, showToast }) {
         </div>
 
         <div className="adm-tabs">
-          {['hero', 'about', 'projects', 'resume'].map(t => (
+          {['hero', 'about', 'projects', 'experience', 'resume'].map(t => (
             <button
               key={t}
               className={`adm-tab${tab === t ? ' on' : ''}`}
@@ -455,6 +474,63 @@ export default function Admin({ content, onSave, onClose, showToast }) {
                 <button className="upload-btn" style={{ alignSelf: 'flex-start' }}
                   onClick={() => setAddingProj(true)}>
                   + Add Project
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* ── EXPERIENCE TAB ── */}
+          {tab === 'experience' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <p className="fhint" style={{ marginBottom: 4 }}>
+                These items scroll in the Experience marquee. Changes save with the rest of the content.
+              </p>
+              <div className="proj-list">
+                {(ec.experience || []).map(item => (
+                  <div key={item.id} className="proj-item">
+                    <div
+                      style={{
+                        width: 36, height: 36, borderRadius: 8,
+                        background: 'var(--navy)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        flexShrink: 0, fontSize: 10, fontWeight: 700, color: 'white',
+                      }}
+                    >
+                      {item.initials}
+                    </div>
+                    <div>
+                      <p className="proj-item-name">{item.company}</p>
+                      <p className="proj-item-stack">{item.role}</p>
+                    </div>
+                    <div className="proj-item-actions">
+                      <button className="btn-sm danger" onClick={() => delExperience(item.id)}>Delete</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {addingExp ? (
+                <div className="new-proj-form">
+                  <p className="new-proj-form-title">New Experience Item</p>
+                  <input className="finput" placeholder="Company name *"
+                    value={newExp.company}
+                    onChange={e => setNewExp(p => ({ ...p, company: e.target.value }))} />
+                  <input className="finput" placeholder="Role or title"
+                    value={newExp.role}
+                    onChange={e => setNewExp(p => ({ ...p, role: e.target.value }))} />
+                  <input className="finput" placeholder="Initials (max 3, e.g. WP)"
+                    maxLength={3} value={newExp.initials}
+                    onChange={e => setNewExp(p => ({ ...p, initials: e.target.value }))} />
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button className="btn-primary" onClick={addExperience} disabled={!newExp.company.trim()}>
+                      Add Item
+                    </button>
+                    <button className="btn-sm" onClick={() => setAddingExp(false)}>Cancel</button>
+                  </div>
+                </div>
+              ) : (
+                <button className="upload-btn" style={{ alignSelf: 'flex-start' }}
+                  onClick={() => setAddingExp(true)}>
+                  + Add Item
                 </button>
               )}
             </div>

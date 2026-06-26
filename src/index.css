@@ -16,6 +16,13 @@
   --shadow-card-hover: 0 12px 40px rgba(10, 22, 40, 0.14), 0 2px 8px rgba(10, 22, 40, 0.06);
 }
 
+/* ── Topographic Canvas (full-page fixed) ───────────────── */
+.topo-canvas {
+  position: fixed; inset: 0;
+  width: 100%; height: 100%;
+  z-index: 0; pointer-events: none; display: block;
+}
+
 /* ── Custom Cursor ───────────────────────────────────────── */
 @media (hover: hover) and (pointer: fine) {
   * { cursor: none !important; }
@@ -42,10 +49,10 @@
 
 /* ── Reset ──────────────────────────────────────────────── */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; font-size: 16px; }
+html { scroll-behavior: smooth; font-size: 16px; background: white; }
 body {
   font-family: 'Inter', -apple-system, sans-serif;
-  background: var(--bg);
+  background: transparent;
   color: var(--text);
   line-height: 1.7;
   letter-spacing: 0.012em;
@@ -58,6 +65,7 @@ a  { color: inherit; text-decoration: none; }
 button { cursor: pointer; border: none; background: none; font-family: inherit; }
 input, textarea, select { font-family: inherit; }
 img { max-width: 100%; display: block; }
+main { position: relative; z-index: 1; }
 
 /* ── Loading ─────────────────────────────────────────────── */
 .loading-screen {
@@ -188,16 +196,9 @@ img { max-width: 100%; display: block; }
 .hero-section {
   min-height: calc(100vh - var(--nav-h));
   margin-top: var(--nav-h);
-  background: var(--bg);
   position: relative;
   overflow: hidden;
   display: flex; align-items: center;
-}
-.hero-canvas {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  z-index: 0; pointer-events: none;
-  display: block;
 }
 .hero {
   max-width: 1160px; margin: 0 auto;
@@ -361,7 +362,7 @@ img { max-width: 100%; display: block; }
 .proj-card:hover .proj-img-placeholder {
   background: rgba(10, 22, 40, 0.07);
 }
-.proj-body { padding: 24px; }
+.proj-body { padding: 24px 24px 52px; }
 .proj-title {
   font-family: 'Clash Display', sans-serif;
   font-size: 18px; font-weight: 600; color: var(--navy);
@@ -388,10 +389,10 @@ img { max-width: 100%; display: block; }
 }
 .proj-link:hover { background: var(--navy); color: white; border-color: var(--navy); }
 
-/* "View Case Study →" hover text */
+/* "View Project →" hover text — anchored bottom of card */
 .proj-case-link {
+  position: absolute; bottom: 20px; left: 24px;
   display: flex; align-items: center; gap: 5px;
-  margin-top: 14px;
   font-size: 12.5px; font-weight: 600; color: var(--navy);
   opacity: 0;
   transform: translateY(4px);
@@ -402,6 +403,43 @@ img { max-width: 100%; display: block; }
   opacity: 1;
   transform: translateY(0);
 }
+
+/* ── Experience / Marquee ────────────────────────────────── */
+.marquee-wrap {
+  overflow: hidden; position: relative;
+  mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+}
+.marquee-track {
+  display: flex; gap: 0; width: max-content;
+  animation: marquee 32s linear infinite;
+}
+.marquee-track:hover { animation-play-state: paused; }
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.marquee-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 0 36px; flex-shrink: 0;
+}
+.marquee-logo {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--navy);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.marquee-initials {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 11px; font-weight: 700; color: white; letter-spacing: 0.5px;
+}
+.marquee-info { display: flex; flex-direction: column; gap: 2px; }
+.marquee-company {
+  font-family: 'Clash Display', sans-serif;
+  font-size: 14px; font-weight: 600; color: var(--navy); white-space: nowrap;
+}
+.marquee-role { font-size: 12px; color: var(--slate); white-space: nowrap; }
+.marquee-sep { font-size: 20px; color: var(--border); margin-left: 4px; }
 
 /* ── Case Study Full-Screen Overlay ─────────────────────── */
 .case-overlay {
