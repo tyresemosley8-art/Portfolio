@@ -51,23 +51,24 @@ export default function App() {
     return () => { cancelAnimationFrame(raf); io.disconnect() }
   }, [content])
 
-  // ── Keyboard shortcut: Shift + T + M ─────────────────────
+  // ── Keyboard shortcut: Shift+T then Shift+M within 2s ───
   useEffect(() => {
-    const held = new Set()
+    let tPressed = false
+    let timer = null
     const onDown = e => {
-      held.add(e.key.toLowerCase())
-      if (held.has('shift') && held.has('t') && held.has('m')) {
-        held.clear()
+      if (e.shiftKey && e.key === 'T') {
+        tPressed = true
+        clearTimeout(timer)
+        timer = setTimeout(() => { tPressed = false }, 2000)
+      }
+      if (e.shiftKey && e.key === 'M' && tPressed) {
+        tPressed = false
+        clearTimeout(timer)
         setAdminOpen(true)
       }
     }
-    const onUp = e => held.delete(e.key.toLowerCase())
     window.addEventListener('keydown', onDown)
-    window.addEventListener('keyup', onUp)
-    return () => {
-      window.removeEventListener('keydown', onDown)
-      window.removeEventListener('keyup', onUp)
-    }
+    return () => { window.removeEventListener('keydown', onDown); clearTimeout(timer) }
   }, [])
 
   function showToast(message, type = 'success') {
