@@ -3,11 +3,24 @@ import { useEffect, useState } from 'react'
 export default function Nav({ name }) {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [wordmarkVisible, setWordmarkVisible] = useState(false)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  // Hide wordmark when hero is in view; show when hero scrolls away
+  useEffect(() => {
+    const hero = document.getElementById('hero')
+    if (!hero) return
+    const io = new IntersectionObserver(
+      ([entry]) => setWordmarkVisible(!entry.isIntersecting),
+      { threshold: 0.15 }
+    )
+    io.observe(hero)
+    return () => io.disconnect()
   }, [])
 
   useEffect(() => {
@@ -34,7 +47,9 @@ export default function Nav({ name }) {
           <span className="hline" />
           <span className="hline" />
         </button>
-        <span className="nav-wordmark">{name || 'Tyrese Mosley'}</span>
+        <span className={`nav-wordmark${wordmarkVisible ? ' visible' : ''}`}>
+          {name || 'Tyrese Mosley'}
+        </span>
       </nav>
 
       <div className={`nav-overlay${open ? ' open' : ''}`} onClick={() => setOpen(false)} />
