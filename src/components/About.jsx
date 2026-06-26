@@ -20,6 +20,9 @@ export default function About({ about, profilePhoto }) {
             </div>
             <p className="about-bio reveal reveal-d2">{about.bio}</p>
             <p className="about-journey reveal reveal-d3">{about.journey}</p>
+            <p className="about-footer reveal reveal-d4">
+              Philadelphia, PA &nbsp;·&nbsp; Posse Scholar &nbsp;·&nbsp; Information Science
+            </p>
           </div>
         </div>
       </div>

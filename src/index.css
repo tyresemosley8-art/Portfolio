@@ -16,6 +16,51 @@
   --shadow-card-hover: 0 12px 40px rgba(10, 22, 40, 0.14), 0 2px 8px rgba(10, 22, 40, 0.06);
 }
 
+/* ── Custom Cursor ───────────────────────────────────────── */
+@media (hover: hover) and (pointer: fine) {
+  * { cursor: none !important; }
+}
+
+.cursor-wrap {
+  position: fixed; top: 0; left: 0;
+  pointer-events: none; z-index: 10000;
+  will-change: transform;
+}
+.cursor-body {
+  position: relative;
+  width: 24px; height: 24px;
+  transform: translate(-50%, -50%);
+  transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.cursor-h {
+  position: absolute;
+  top: 50%; left: 0; right: 0; height: 1.5px;
+  background: var(--navy);
+  transform: translateY(-50%);
+  transition: opacity 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.cursor-v {
+  position: absolute;
+  left: 50%; top: 0; bottom: 0; width: 1.5px;
+  background: var(--navy);
+  transform: translateX(-50%);
+  transition: opacity 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.cursor-ring {
+  position: absolute;
+  top: -6px; left: -6px; right: -6px; bottom: -6px;
+  border: 1.5px solid var(--navy);
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.cursor-wrap.hovered .cursor-h,
+.cursor-wrap.hovered .cursor-v { opacity: 0; }
+.cursor-wrap.hovered .cursor-ring { opacity: 1; transform: scale(1); }
+.cursor-wrap.clicked .cursor-body { transform: translate(-50%, -50%) scale(0.78); }
+
 /* ── Reset ──────────────────────────────────────────────── */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; font-size: 16px; }
@@ -158,14 +203,34 @@ img { max-width: 100%; display: block; }
 }
 
 /* ── Hero ────────────────────────────────────────────────── */
-.hero {
+.hero-section {
   min-height: calc(100vh - var(--nav-h));
   margin-top: var(--nav-h);
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
   display: flex; align-items: center;
-  max-width: 1160px; margin-left: auto; margin-right: auto;
+}
+.hero-section::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse at 12% 55%, rgba(10,22,40,0.06) 0%, transparent 52%),
+    radial-gradient(ellipse at 82% 35%, rgba(10,22,40,0.04) 0%, transparent 44%);
+  animation: heroBreath 14s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes heroBreath {
+  from { opacity: 0.45; transform: scale(1) translateX(0); }
+  to   { opacity: 1;    transform: scale(1.07) translateX(-1%); }
+}
+.hero {
+  max-width: 1160px; margin: 0 auto;
+  width: 100%;
+  display: flex; align-items: center;
   padding: 60px 52px;
   gap: 80px;
-  background: var(--bg);
+  position: relative; z-index: 1;
 }
 .hero-content { flex: 1; }
 .hero-eyebrow {
@@ -276,6 +341,11 @@ img { max-width: 100%; display: block; }
 .about-text { display: flex; flex-direction: column; gap: 20px; }
 .about-bio { font-size: 17px; line-height: 1.9; color: var(--text); letter-spacing: 0.01em; word-spacing: 0.05em; }
 .about-journey { font-size: 15px; line-height: 1.95; color: var(--slate); letter-spacing: 0.01em; word-spacing: 0.05em; }
+.about-footer {
+  font-size: 0.72rem; color: var(--slate);
+  letter-spacing: 0.15em; word-spacing: 0.1em;
+  text-transform: uppercase; margin-top: 8px;
+}
 
 /* ── Projects ────────────────────────────────────────────── */
 .projects-grid {
@@ -291,6 +361,15 @@ img { max-width: 100%; display: block; }
   box-shadow: var(--shadow-card);
   transition: transform 0.3s var(--ease-lift), box-shadow 0.3s var(--ease-lift), border-color 0.3s var(--ease-lift);
 }
+.proj-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0;
+  height: 3px; width: 0%;
+  background: var(--navy);
+  z-index: 2;
+  transition: width 0.3s ease;
+}
+.proj-card:hover::before { width: 100%; }
 .proj-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-card-hover);
@@ -302,6 +381,10 @@ img { max-width: 100%; display: block; }
   width: 100%; height: 140px;
   background: var(--light-gray);
   display: flex; align-items: center; justify-content: center;
+  transition: background 0.3s var(--ease-lift);
+}
+.proj-card:hover .proj-img-placeholder {
+  background: rgba(10, 22, 40, 0.07);
 }
 .proj-body { padding: 24px; }
 .proj-title {
@@ -432,6 +515,31 @@ img { max-width: 100%; display: block; }
   transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
 .case-ext-link:hover { background: var(--navy); color: white; border-color: var(--navy); }
+
+/* ── Quote / Statement Section ───────────────────────────── */
+.quote-section {
+  background: var(--navy);
+  padding: 120px 52px;
+  text-align: center;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 20px;
+}
+.quote-main {
+  font-family: 'Clash Display', sans-serif;
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 700; color: white;
+  line-height: 1.1; letter-spacing: 0.01em; word-spacing: 4px;
+  max-width: 820px;
+}
+.quote-sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem; color: rgba(255,255,255,0.4);
+  letter-spacing: 0.18em; text-transform: uppercase;
+}
+
+/* Override reveal colors inside navy section */
+.quote-section .reveal { opacity: 0; transform: translateY(28px); }
+.quote-section .reveal.visible { opacity: 1; transform: translateY(0); }
 
 /* ── Resume ──────────────────────────────────────────────── */
 .resume-head {
@@ -689,7 +797,6 @@ img { max-width: 100%; display: block; }
     flex-direction: column-reverse;
     padding: 60px 28px;
     gap: 40px; align-items: flex-start;
-    min-height: calc(100vh - var(--nav-h));
   }
   .hero-photo-wrap { align-self: center; }
   .hero-photo, .hero-photo-placeholder { width: 200px; height: 200px; }
@@ -704,4 +811,5 @@ img { max-width: 100%; display: block; }
   .nav-panel { padding: 72px 32px; }
   .case-container { padding: 80px 24px 80px; }
   .case-back-btn { top: 16px; left: 16px; font-size: 12px; padding: 7px 12px; }
+  .quote-section { padding: 80px 28px; }
 }

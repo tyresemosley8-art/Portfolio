@@ -8,7 +8,7 @@ const EMPTY_IMAGES = [
 export const DEFAULT_CONTENT = {
   hero: {
     name: 'Tyrese Mosley',
-    subtitle: 'Information Science Student · Tech Builder · Problem Solver',
+    subtitle: 'I build things that actually work for people who actually need them.',
   },
   about: {
     heading: 'Who I am',

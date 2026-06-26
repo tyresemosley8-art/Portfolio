@@ -6,6 +6,8 @@ import Projects from './components/Projects'
 import Resume from './components/Resume'
 import Admin from './components/Admin'
 import CaseStudy from './components/CaseStudy'
+import Quote from './components/Quote'
+import Cursor from './components/Cursor'
 import Toast from './components/Toast'
 import { fetchContentFromGithub } from './lib/github'
 import { DEFAULT_CONTENT } from './lib/defaultContent'
@@ -39,11 +41,13 @@ export default function App() {
     load()
   }, [])
 
-  // ── Scroll reveal ─────────────────────────────────────────
+  // ── Scroll reveal — bidirectional ─────────────────────────
   useEffect(() => {
     if (!content) return
     const io = new IntersectionObserver(
-      entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible') }),
+      entries => entries.forEach(e => {
+        e.target.classList.toggle('visible', e.isIntersecting)
+      }),
       { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
     )
     const raf = requestAnimationFrame(() => {
@@ -93,6 +97,7 @@ export default function App() {
 
   return (
     <>
+      <Cursor />
       <Nav name={content.hero.name} />
       <main>
         <Hero hero={content.hero} profilePhoto={content.profilePhoto} />
@@ -102,6 +107,7 @@ export default function App() {
           heading={content.projectsHeading}
           onOpenProject={setOpenProject}
         />
+        <Quote />
         <Resume resume={content.resume} heading={content.resumeHeading} />
       </main>
 
