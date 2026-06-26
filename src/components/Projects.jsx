@@ -1,4 +1,4 @@
-export default function Projects({ projects, heading }) {
+export default function Projects({ projects, heading, onOpenProject }) {
   return (
     <section className="section-wrap" id="projects">
       <div className="reveal">
@@ -8,7 +8,11 @@ export default function Projects({ projects, heading }) {
 
       <div className="projects-grid">
         {projects.map((p, i) => (
-          <div key={p.id} className={`proj-card reveal reveal-d${Math.min(i + 1, 4)}`}>
+          <div
+            key={p.id}
+            className={`proj-card reveal reveal-d${Math.min(i + 1, 4)}`}
+            onClick={() => onOpenProject(p)}
+          >
             {p.image ? (
               <img src={p.image} alt={p.title} className="proj-img" />
             ) : (
@@ -25,10 +29,17 @@ export default function Projects({ projects, heading }) {
                 </div>
               )}
               {p.link && (
-                <a href={p.link} target="_blank" rel="noopener noreferrer" className="proj-link">
+                <a
+                  href={p.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="proj-link"
+                  onClick={e => e.stopPropagation()}
+                >
                   View project ↗
                 </a>
               )}
+              <span className="proj-case-link">View Case Study →</span>
             </div>
           </div>
         ))}

@@ -3,6 +3,12 @@ import { getGithubConfig, saveGithubConfig, clearGithubConfig, saveContentToGith
 
 const PIN_KEY = 'portfolio_admin_pin'
 const DEFAULT_PIN = '1234'
+const EMPTY_CS_IMAGES = [
+  { src: null, caption: '' },
+  { src: null, caption: '' },
+  { src: null, caption: '' },
+  { src: null, caption: '' },
+]
 
 function getPin() {
   return localStorage.getItem(PIN_KEY) || DEFAULT_PIN
@@ -12,7 +18,7 @@ export default function Admin({ content, onSave, onClose, showToast }) {
   const [view, setView] = useState('pin') // 'pin' | 'github-setup' | 'main'
   const [pin, setPin] = useState('')
   const [pinShake, setPinShake] = useState(false)
-  const [ec, setEc] = useState(() => JSON.parse(JSON.stringify(content))) // edit copy
+  const [ec, setEc] = useState(() => JSON.parse(JSON.stringify(content)))
   const [saving, setSaving] = useState(false)
   const [tab, setTab] = useState('hero')
   const [addingProj, setAddingProj] = useState(false)
@@ -51,7 +57,7 @@ export default function Admin({ content, onSave, onClose, showToast }) {
       onSave(ec)
       showToast('Changes saved & deployed ✓')
       onClose()
-    } catch (err) {
+    } catch {
       onSave(ec)
       localStorage.setItem('portfolio_content', JSON.stringify(ec))
       showToast('Saved locally — check GitHub config', 'warn')
@@ -85,6 +91,7 @@ export default function Admin({ content, onSave, onClose, showToast }) {
       stack: newProj.stack.split(',').map(s => s.trim()).filter(Boolean),
       image: null,
       link: newProj.link.trim() || null,
+      caseStudy: { hook: '', story: '', images: JSON.parse(JSON.stringify(EMPTY_CS_IMAGES)) },
     }
     setEc(prev => ({ ...prev, projects: [...prev.projects, p] }))
     setNewProj({ title: '', description: '', stack: '', link: '' })
@@ -100,6 +107,29 @@ export default function Admin({ content, onSave, onClose, showToast }) {
     setEc(prev => ({
       ...prev,
       projects: prev.projects.map(p => p.id === id ? { ...p, [field]: val } : p),
+    }))
+  }
+
+  function updateProjCaseStudy(id, field, val) {
+    setEc(prev => ({
+      ...prev,
+      projects: prev.projects.map(p =>
+        p.id === id
+          ? { ...p, caseStudy: { ...(p.caseStudy || {}), [field]: val } }
+          : p
+      ),
+    }))
+  }
+
+  function updateProjCaseStudyImage(id, imgIdx, field, val) {
+    setEc(prev => ({
+      ...prev,
+      projects: prev.projects.map(p => {
+        if (p.id !== id) return p
+        const imgs = [...((p.caseStudy?.images) || JSON.parse(JSON.stringify(EMPTY_CS_IMAGES)))]
+        imgs[imgIdx] = { ...imgs[imgIdx], [field]: val }
+        return { ...p, caseStudy: { ...(p.caseStudy || {}), images: imgs } }
+      }),
     }))
   }
 
@@ -148,8 +178,8 @@ export default function Admin({ content, onSave, onClose, showToast }) {
             <div className="setup-view">
               <p className="setup-heading">One-time setup</p>
               <p className="setup-desc">
-                Every time you save, this app commits <code>content.json</code> to your GitHub repo,
-                and Vercel auto-redeploys the site. Create a Personal Access Token at{' '}
+                Every save commits <code>content.json</code> to your GitHub repo
+                and Vercel auto-redeploys. Create a Personal Access Token at{' '}
                 <strong>github.com → Settings → Developer settings → Personal access tokens</strong>{' '}
                 with <code>repo</code> scope.
               </p>
@@ -174,7 +204,7 @@ export default function Admin({ content, onSave, onClose, showToast }) {
                 </div>
                 <div className="fgroup">
                   <label className="flabel">Repo name</label>
-                  <span className="fhint">Create an empty repo on GitHub first, then enter the name here</span>
+                  <span className="fhint">Create an empty repo on GitHub first</span>
                   <input
                     className="finput" placeholder="portfolio"
                     value={ghForm.repo}
@@ -293,9 +323,10 @@ export default function Admin({ content, onSave, onClose, showToast }) {
                   editProjId === p.id ? (
                     <div key={p.id} className="new-proj-form">
                       <p className="new-proj-form-title">Editing — {p.title}</p>
+
                       <input className="finput" placeholder="Title" value={p.title}
                         onChange={e => updateProject(p.id, 'title', e.target.value)} />
-                      <textarea className="ftextarea" rows={3} placeholder="Description"
+                      <textarea className="ftextarea" rows={3} placeholder="Short description (shown on card)"
                         value={p.description}
                         onChange={e => updateProject(p.id, 'description', e.target.value)} />
                       <input className="finput" placeholder="Stack: React, Node.js, PostgreSQL"
@@ -304,14 +335,84 @@ export default function Admin({ content, onSave, onClose, showToast }) {
                           e.target.value.split(',').map(s => s.trim()).filter(Boolean))} />
                       <input className="finput" placeholder="Link (optional)" value={p.link || ''}
                         onChange={e => updateProject(p.id, 'link', e.target.value || null)} />
+
                       <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
                         <input type="file" accept="image/*" id={`img-${p.id}`} style={{ display: 'none' }}
                           onChange={e => readFile(e.target.files[0], v => updateProject(p.id, 'image', v))} />
                         <label htmlFor={`img-${p.id}`} className="upload-btn" style={{ fontSize: 12 }}>
-                          {p.image ? '↺ Image' : '+ Image'}
+                          {p.image ? '↺ Card image' : '+ Card image'}
                         </label>
-                        <button className="btn-primary" onClick={() => setEditProjId(null)}>Done</button>
                       </div>
+
+                      {/* ── Case Study section ── */}
+                      <div className="cs-admin-section">
+                        <p className="cs-admin-label">Case Study</p>
+                        <div className="fgroup">
+                          <label className="flabel">Hook — one sentence</label>
+                          <input
+                            className="finput"
+                            placeholder="e.g. Replaced 5 disconnected tools with one platform."
+                            value={p.caseStudy?.hook || ''}
+                            onChange={e => updateProjCaseStudy(p.id, 'hook', e.target.value)}
+                          />
+                        </div>
+                        <div className="fgroup">
+                          <label className="flabel">Story</label>
+                          <span className="fhint">Write in paragraphs — separate with a blank line</span>
+                          <textarea
+                            className="ftextarea"
+                            rows={8}
+                            placeholder="Paragraph one about the problem...\n\nParagraph two about your solution..."
+                            value={p.caseStudy?.story || ''}
+                            onChange={e => updateProjCaseStudy(p.id, 'story', e.target.value)}
+                            style={{ minHeight: 140 }}
+                          />
+                        </div>
+                        <p className="fhint" style={{ marginTop: 4 }}>Up to 4 images — placed between paragraphs</p>
+                        {[0, 1, 2, 3].map(imgIdx => (
+                          <div key={imgIdx} className="cs-img-row">
+                            <span className="fhint">Image {imgIdx + 1}</span>
+                            {p.caseStudy?.images?.[imgIdx]?.src && (
+                              <img
+                                src={p.caseStudy.images[imgIdx].src}
+                                alt=""
+                                className="cs-img-preview"
+                              />
+                            )}
+                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                              <input
+                                type="file" accept="image/*"
+                                id={`cs-img-${p.id}-${imgIdx}`}
+                                style={{ display: 'none' }}
+                                onChange={e => readFile(e.target.files[0], v =>
+                                  updateProjCaseStudyImage(p.id, imgIdx, 'src', v)
+                                )}
+                              />
+                              <label htmlFor={`cs-img-${p.id}-${imgIdx}`} className="upload-btn" style={{ fontSize: 12 }}>
+                                {p.caseStudy?.images?.[imgIdx]?.src ? '↺ Change' : '+ Upload'}
+                              </label>
+                              {p.caseStudy?.images?.[imgIdx]?.src && (
+                                <button
+                                  className="btn-sm danger"
+                                  onClick={() => updateProjCaseStudyImage(p.id, imgIdx, 'src', null)}
+                                >
+                                  Remove
+                                </button>
+                              )}
+                            </div>
+                            <input
+                              className="finput"
+                              placeholder="Caption (optional)"
+                              value={p.caseStudy?.images?.[imgIdx]?.caption || ''}
+                              onChange={e => updateProjCaseStudyImage(p.id, imgIdx, 'caption', e.target.value)}
+                            />
+                          </div>
+                        ))}
+                      </div>
+
+                      <button className="btn-primary" style={{ marginTop: 8 }} onClick={() => setEditProjId(null)}>
+                        Done
+                      </button>
                     </div>
                   ) : (
                     <div key={p.id} className="proj-item">
@@ -371,7 +472,7 @@ export default function Admin({ content, onSave, onClose, showToast }) {
               </div>
               <div className="fgroup">
                 <label className="flabel">Upload PDF</label>
-                <span className="fhint">Stored as base64 in content.json — keep files under 1 MB</span>
+                <span className="fhint">Stored as base64 in content.json — keep under 1 MB</span>
                 <input type="file" accept=".pdf,application/pdf" id="resume-up" style={{ display: 'none' }}
                   onChange={e => readFile(e.target.files[0], v => setEc(p => ({ ...p, resume: v })))} />
                 <label htmlFor="resume-up" className="upload-btn" style={{ marginTop: 6 }}>

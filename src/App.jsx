@@ -5,6 +5,7 @@ import About from './components/About'
 import Projects from './components/Projects'
 import Resume from './components/Resume'
 import Admin from './components/Admin'
+import CaseStudy from './components/CaseStudy'
 import Toast from './components/Toast'
 import { fetchContentFromGithub } from './lib/github'
 import { DEFAULT_CONTENT } from './lib/defaultContent'
@@ -12,6 +13,7 @@ import { DEFAULT_CONTENT } from './lib/defaultContent'
 export default function App() {
   const [content, setContent] = useState(null)
   const [adminOpen, setAdminOpen] = useState(false)
+  const [openProject, setOpenProject] = useState(null)
   const [toast, setToast] = useState(null)
   const toastTimer = useRef(null)
 
@@ -44,7 +46,6 @@ export default function App() {
       entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible') }),
       { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
     )
-    // Small delay so React has finished painting
     const raf = requestAnimationFrame(() => {
       document.querySelectorAll('.reveal').forEach(el => io.observe(el))
     })
@@ -96,9 +97,20 @@ export default function App() {
       <main>
         <Hero hero={content.hero} profilePhoto={content.profilePhoto} />
         <About about={content.about} profilePhoto={content.profilePhoto} />
-        <Projects projects={content.projects} heading={content.projectsHeading} />
+        <Projects
+          projects={content.projects}
+          heading={content.projectsHeading}
+          onOpenProject={setOpenProject}
+        />
         <Resume resume={content.resume} heading={content.resumeHeading} />
       </main>
+
+      {openProject && (
+        <CaseStudy
+          project={openProject}
+          onClose={() => setOpenProject(null)}
+        />
+      )}
 
       {adminOpen && (
         <Admin
