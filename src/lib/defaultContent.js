@@ -1,3 +1,5 @@
+const DOT = String.fromCharCode(183)
+
 const EMPTY_IMAGES = [
   { src: null, caption: '' },
   { src: null, caption: '' },
@@ -14,7 +16,7 @@ export const DEFAULT_CONTENT = {
     heading: 'Who I am',
     bio: "I'm Tyrese Mosley, an Information Science student with a passion for building technology that actually makes a difference. I love turning complex problems into clean, intuitive experiences — from full-stack web apps to data systems used by real organizations.",
     journey: "My journey started with a simple curiosity about how things work on the internet. That curiosity turned into late nights learning to code, eventually leading me to build real tools for nonprofits in Philadelphia. Every project teaches me something new, and every line of code is a step toward the kind of builder I want to be.",
-    footer: 'Philadelphia, PA · Posse Scholar · Information Science',
+    footer: 'Philadelphia, PA ' + DOT + ' Posse Scholar ' + DOT + ' Information Science',
     photo: null,
   },
   quote: {

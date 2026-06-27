@@ -1,6 +1,8 @@
+﻿const SEP = String.fromCharCode(183)
+
 export default function About({ about, profilePhoto }) {
   const photo = about.photo || profilePhoto
-  const footer = about.footer || 'Philadelphia, PA · Posse Scholar · Information Science'
+  const footer = about.footer || ('Philadelphia, PA ' + SEP + ' Posse Scholar ' + SEP + ' Information Science')
 
   return (
     <section className="section-wrap bg-gray" id="about">
@@ -11,7 +13,7 @@ export default function About({ about, profilePhoto }) {
               <img src={photo} alt="Profile" className="about-photo" />
             ) : (
               <div className="about-photo-placeholder">
-                <span style={{ fontSize: 28, opacity: 0.3 }}>👤</span>
+                <span style={{ fontSize: 28, opacity: 0.3 }}>&#128100;</span>
               </div>
             )}
           </div>

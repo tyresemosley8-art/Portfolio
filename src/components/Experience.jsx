@@ -32,7 +32,7 @@ export default function Experience({ experience }) {
                 <p className="marquee-company">{item.company}</p>
                 <p className="marquee-role">{item.role}</p>
               </div>
-              <span className="marquee-sep" aria-hidden="true">·</span>
+              <span className="marquee-sep" aria-hidden="true">{String.fromCharCode(183)}</span>
             </div>
           ))}
         </div>

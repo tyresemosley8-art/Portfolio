@@ -33,7 +33,7 @@ export default function TopoCanvas() {
 
         for (let s = 0; s <= SEGS; s++) {
           const x = (width / SEGS) * s
-          const a = t * 0.001 + i * 0.92
+          const a = t * 0.0022 + i * 0.92
           const y = baseY
             + Math.sin(x * 0.0048 + a) * 34
             + Math.sin(x * 0.010 + a * 1.4) * 16

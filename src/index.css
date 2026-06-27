@@ -302,6 +302,7 @@ main { position: relative; z-index: 1; }
   grid-template-columns: 1fr 1.6fr;
   gap: 72px; align-items: center;
 }
+.about-grid > .reveal { align-self: center; }
 .about-photo {
   width: 100%; aspect-ratio: 4/5; object-fit: cover;
   border-radius: 24px;

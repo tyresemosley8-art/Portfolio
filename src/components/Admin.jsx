@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { getGithubConfig, saveGithubConfig, clearGithubConfig, saveContentToGithub } from '../lib/github'
 
+const DOT = String.fromCharCode(183)
 const PIN_KEY = 'portfolio_admin_pin'
 const DEFAULT_PIN = '1234'
 const EMPTY_CS_IMAGES = [
@@ -336,7 +337,7 @@ export default function Admin({ content, onSave, onClose, showToast }) {
                 <span className="fhint">Shown below the bio in small caps</span>
                 <input className="finput"
                   value={ec.about.footer || ''}
-                  placeholder="Philadelphia, PA · Posse Scholar · Information Science"
+                  placeholder={'Philadelphia, PA ' + DOT + ' Posse Scholar ' + DOT + ' Information Science'}
                   onChange={e => updateEc('about.footer', e.target.value)} />
               </div>
               <div className="fgroup">
@@ -468,7 +469,7 @@ export default function Admin({ content, onSave, onClose, showToast }) {
                     <div key={p.id} className="proj-item">
                       <div>
                         <p className="proj-item-name">{p.title}</p>
-                        <p className="proj-item-stack">{p.stack.join(' · ')}</p>
+                        <p className="proj-item-stack">{p.stack.join(' ' + DOT + ' ')}</p>
                       </div>
                       <div className="proj-item-actions">
                         <button className="btn-sm" onClick={() => setEditProjId(p.id)}>Edit</button>
