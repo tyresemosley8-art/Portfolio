@@ -39,7 +39,9 @@ export async function fetchContentFromGithub() {
   const data = await res.json()
   // GitHub returns base64 with line breaks — strip them before decoding
   const cleaned = data.content.replace(/\n/g, '')
-  const content = JSON.parse(atob(cleaned))
+  // atob returns binary string; decodeURIComponent(escape(...)) converts to proper UTF-8
+  const jsonStr = decodeURIComponent(escape(atob(cleaned)))
+  const content = JSON.parse(jsonStr)
   return { content, sha: data.sha }
 }
 

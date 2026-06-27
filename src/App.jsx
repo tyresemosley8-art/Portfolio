@@ -16,6 +16,28 @@ import Toast from './components/Toast'
 import { fetchContentFromGithub } from './lib/github'
 import { DEFAULT_CONTENT } from './lib/defaultContent'
 
+// Repair any double/triple UTF-8 encoding corruption that may be cached in localStorage
+const CORRUPT_EM = String.fromCharCode(0xC3,0x83,0xC2,0xA2,0xC3,0x82,0xC2,0x80,0xC3,0x82,0xC2,0x94)
+const CORRUPT_EM2 = String.fromCharCode(0xC3,0xA2,0xC2,0x80,0xC2,0x94)
+const CORRUPT_DOT = String.fromCharCode(0xC2,0xB7)
+function sanitizeStr(s) {
+  if (typeof s !== 'string') return s
+  return s
+    .split(CORRUPT_EM).join('—')
+    .split(CORRUPT_EM2).join('—')
+    .split(CORRUPT_DOT).join('·')
+}
+function sanitize(obj) {
+  if (typeof obj === 'string') return sanitizeStr(obj)
+  if (Array.isArray(obj)) return obj.map(sanitize)
+  if (obj && typeof obj === 'object') {
+    const r = {}
+    Object.keys(obj).forEach(k => { r[k] = sanitize(obj[k]) })
+    return r
+  }
+  return obj
+}
+
 export default function App() {
   const [content, setContent] = useState(null)
   const [adminOpen, setAdminOpen] = useState(false)
@@ -29,15 +51,16 @@ export default function App() {
       try {
         const result = await fetchContentFromGithub()
         if (result?.content) {
-          setContent(result.content)
-          localStorage.setItem('portfolio_content', JSON.stringify(result.content))
+          const clean = sanitize(result.content)
+          setContent(clean)
+          localStorage.setItem('portfolio_content', JSON.stringify(clean))
           return
         }
       } catch { /* fall through */ }
 
       const cached = localStorage.getItem('portfolio_content')
       if (cached) {
-        try { setContent(JSON.parse(cached)); return } catch { /* fall through */ }
+        try { setContent(sanitize(JSON.parse(cached))); return } catch { /* fall through */ }
       }
 
       setContent(DEFAULT_CONTENT)
