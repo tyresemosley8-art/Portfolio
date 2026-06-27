@@ -74,4 +74,10 @@ export const DEFAULT_CONTENT = {
     { id: '5', company: 'NICE Conference', role: 'Cybersecurity Attendee', initials: 'NC' },
     { id: '6', company: '1PHL Tech', role: 'Conference Attendee', initials: '1P' },
   ],
+  contact: {
+    email: '',
+    linkedin: '',
+    github: '',
+    subtext: 'Open to internships, opportunities, and conversations.',
+  },
 }

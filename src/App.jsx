@@ -8,8 +8,10 @@ import Resume from './components/Resume'
 import Admin from './components/Admin'
 import CaseStudy from './components/CaseStudy'
 import Quote from './components/Quote'
+import Contact from './components/Contact'
 import Cursor from './components/Cursor'
 import TopoCanvas from './components/TopoCanvas'
+import Intro from './components/Intro'
 import Toast from './components/Toast'
 import { fetchContentFromGithub } from './lib/github'
 import { DEFAULT_CONTENT } from './lib/defaultContent'
@@ -58,6 +60,35 @@ export default function App() {
     return () => { cancelAnimationFrame(raf); io.disconnect() }
   }, [content])
 
+  // ── Favicon (navy rounded square, white TM) ──────────────
+  useEffect(() => {
+    const c = document.createElement('canvas')
+    c.width = c.height = 64
+    const ctx = c.getContext('2d')
+    const r = 10
+    ctx.fillStyle = '#0A1628'
+    ctx.beginPath()
+    ctx.moveTo(r, 0); ctx.lineTo(64 - r, 0)
+    ctx.arcTo(64, 0, 64, r, r)
+    ctx.lineTo(64, 64 - r)
+    ctx.arcTo(64, 64, 64 - r, 64, r)
+    ctx.lineTo(r, 64)
+    ctx.arcTo(0, 64, 0, 64 - r, r)
+    ctx.lineTo(0, r)
+    ctx.arcTo(0, 0, r, 0, r)
+    ctx.closePath()
+    ctx.fill()
+    ctx.fillStyle = 'white'
+    ctx.font = 'bold 22px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText('TM', 32, 33)
+    let link = document.querySelector("link[rel~='icon']")
+    if (!link) { link = document.createElement('link'); link.rel = 'icon'; document.head.appendChild(link) }
+    link.href = c.toDataURL()
+    document.title = 'Tyrese Mosley — Portfolio'
+  }, [])
+
   // ── Keyboard shortcut: Shift+T then Shift+M within 2s ───
   useEffect(() => {
     let tPressed = false
@@ -99,6 +130,7 @@ export default function App() {
 
   return (
     <>
+      <Intro />
       <TopoCanvas />
       <Cursor />
       <Nav name={content.hero.name} />
@@ -113,6 +145,7 @@ export default function App() {
         />
         <Quote quote={content.quote} />
         <Resume resume={content.resume} heading={content.resumeHeading} />
+        <Contact contact={content.contact} />
       </main>
 
       {openProject && (

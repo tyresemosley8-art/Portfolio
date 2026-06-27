@@ -811,6 +811,74 @@ main { position: relative; z-index: 1; }
   to   { opacity: 1; transform: translateY(0)    scale(1);    }
 }
 
+/* ── Page Intro ──────────────────────────────────────────── */
+.intro-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: white;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.6s var(--ease);
+}
+.intro-overlay.fading { opacity: 0; pointer-events: none; }
+.intro-name {
+  font-family: 'Clash Display', sans-serif;
+  font-size: clamp(28px, 5vw, 48px);
+  font-weight: 700; color: var(--navy); letter-spacing: -0.5px;
+  animation: introFade 0.8s var(--ease) both;
+}
+@keyframes introFade {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Contact ─────────────────────────────────────────────── */
+.contact-section {
+  background: var(--navy);
+  padding: 120px 52px 80px;
+  display: flex; flex-direction: column;
+  align-items: center; text-align: center;
+  position: relative; z-index: 1;
+}
+.contact-label {
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 2.5px;
+  color: rgba(255,255,255,0.4); margin-bottom: 16px;
+}
+.contact-heading {
+  font-family: 'Clash Display', sans-serif;
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 700; color: white;
+  letter-spacing: -0.5px; margin-bottom: 16px;
+}
+.contact-sub {
+  font-size: 15px; color: rgba(255,255,255,0.55);
+  margin-bottom: 56px; max-width: 420px; line-height: 1.65;
+}
+.contact-links {
+  display: flex; gap: 64px; align-items: flex-start;
+  justify-content: center; margin-bottom: 64px;
+}
+.contact-link {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 10px;
+  color: rgba(255,255,255,0.6);
+  transition: color 0.2s var(--ease), transform 0.2s var(--ease);
+  text-decoration: none;
+}
+.contact-link:hover { color: white; transform: scale(1.1) translateY(-2px); }
+.contact-link-placeholder { color: rgba(255,255,255,0.25); }
+.contact-link-label {
+  font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
+}
+.contact-copy {
+  font-size: 11px; color: rgba(255,255,255,0.22);
+  letter-spacing: 0.4px;
+}
+
+/* ── Touch: disable custom cursor ───────────────────────── */
+@media (pointer: coarse) {
+  .cursor-wrap { display: none !important; }
+}
+
 /* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 860px) {
   .hero {
@@ -832,4 +900,29 @@ main { position: relative; z-index: 1; }
   .case-container { padding: 80px 24px 80px; }
   .case-back-btn { top: 16px; left: 16px; font-size: 12px; padding: 7px 12px; }
   .quote-section { padding: 80px 28px; }
+  .contact-section { padding: 80px 28px 60px; }
+  .contact-links { gap: 44px; }
+}
+
+@media (max-width: 480px) {
+  .nav { padding: 0 20px; }
+  .nav-panel { width: 100vw; padding: 72px 24px; }
+  .hero { padding: 40px 20px; gap: 28px; }
+  .hero-photo, .hero-photo-placeholder { width: 160px; height: 160px; }
+  .section-wrap { padding: 60px 20px; }
+  .section-wrap.bg-gray .section-inner { padding: 0 20px; }
+  .section-title { margin-bottom: 36px; }
+  .about-text { gap: 16px; }
+  .projects-grid { gap: 16px; }
+  .quote-section { padding: 64px 20px; }
+  .contact-section { padding: 64px 20px 48px; }
+  .contact-links { gap: 32px; }
+  .contact-sub { margin-bottom: 40px; }
+  .marquee-track { animation-duration: 42s; }
+  .adm-modal { border-radius: 16px; }
+  .adm-tabs { padding: 10px 16px 0; gap: 0; }
+  .adm-tab { font-size: 11px; padding: 6px 8px; }
+  .adm-body { padding: 20px 20px; }
+  .adm-header { padding: 18px 20px; }
+  .adm-footer { padding: 14px 20px; }
 }

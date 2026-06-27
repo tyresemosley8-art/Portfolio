@@ -258,7 +258,7 @@ export default function Admin({ content, onSave, onClose, showToast }) {
         </div>
 
         <div className="adm-tabs">
-          {['hero', 'about', 'projects', 'experience', 'quote', 'resume'].map(t => (
+          {['hero', 'about', 'projects', 'experience', 'quote', 'contact', 'resume'].map(t => (
             <button
               key={t}
               className={`adm-tab${tab === t ? ' on' : ''}`}
@@ -576,6 +576,36 @@ export default function Admin({ content, onSave, onClose, showToast }) {
                   + Add Item
                 </button>
               )}
+            </div>
+          )}
+
+          {/* ── CONTACT TAB ── */}
+          {tab === 'contact' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div className="fgroup">
+                <label className="flabel">Email address</label>
+                <input className="finput" type="email" placeholder="you@example.com"
+                  value={ec.contact?.email || ''}
+                  onChange={e => setEc(p => ({ ...p, contact: { ...(p.contact || {}), email: e.target.value } }))} />
+              </div>
+              <div className="fgroup">
+                <label className="flabel">LinkedIn URL</label>
+                <input className="finput" placeholder="https://linkedin.com/in/..."
+                  value={ec.contact?.linkedin || ''}
+                  onChange={e => setEc(p => ({ ...p, contact: { ...(p.contact || {}), linkedin: e.target.value } }))} />
+              </div>
+              <div className="fgroup">
+                <label className="flabel">GitHub URL</label>
+                <input className="finput" placeholder="https://github.com/..."
+                  value={ec.contact?.github || ''}
+                  onChange={e => setEc(p => ({ ...p, contact: { ...(p.contact || {}), github: e.target.value } }))} />
+              </div>
+              <div className="fgroup">
+                <label className="flabel">Subtext / tagline</label>
+                <input className="finput" placeholder="Open to internships, opportunities, and conversations."
+                  value={ec.contact?.subtext || ''}
+                  onChange={e => setEc(p => ({ ...p, contact: { ...(p.contact || {}), subtext: e.target.value } }))} />
+              </div>
             </div>
           )}
 
