@@ -1,11 +1,6 @@
 const DOT = String.fromCharCode(183)
 
-const EMPTY_IMAGES = [
-  { src: null, caption: '' },
-  { src: null, caption: '' },
-  { src: null, caption: '' },
-  { src: null, caption: '' },
-]
+const EMPTY_IMAGES = Array.from({ length: 10 }, () => ({ src: null, caption: '' }))
 
 export const DEFAULT_CONTENT = {
   hero: {

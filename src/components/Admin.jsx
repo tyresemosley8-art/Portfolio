@@ -4,12 +4,7 @@ import { getGithubConfig, saveGithubConfig, clearGithubConfig, saveContentToGith
 const DOT = String.fromCharCode(183)
 const PIN_KEY = 'portfolio_admin_pin'
 const DEFAULT_PIN = '1234'
-const EMPTY_CS_IMAGES = [
-  { src: null, caption: '' },
-  { src: null, caption: '' },
-  { src: null, caption: '' },
-  { src: null, caption: '' },
-]
+const EMPTY_CS_IMAGES = Array.from({ length: 10 }, () => ({ src: null, caption: '' }))
 
 function getPin() {
   return localStorage.getItem(PIN_KEY) || DEFAULT_PIN
@@ -469,8 +464,8 @@ export default function Admin({ content, onSave, onClose, showToast }) {
                             style={{ minHeight: 140 }}
                           />
                         </div>
-                        <p className="fhint" style={{ marginTop: 4 }}>Up to 4 images — placed between paragraphs</p>
-                        {[0, 1, 2, 3].map(imgIdx => (
+                        <p className="fhint" style={{ marginTop: 4 }}>Up to 10 images — placed between paragraphs</p>
+                        {Array.from({ length: 10 }, (_, i) => i).map(imgIdx => (
                           <div key={imgIdx} className="cs-img-row">
                             <span className="fhint">Image {imgIdx + 1}</span>
                             {p.caseStudy?.images?.[imgIdx]?.src && (
