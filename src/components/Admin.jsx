@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { getGithubConfig, saveGithubConfig, clearGithubConfig, saveContentToGithub } from '../lib/github'
+import { getGithubConfig, saveGithubConfig, clearGithubConfig, saveContentToGithub, getTokenExpiration } from '../lib/github'
 
 const DOT = String.fromCharCode(183)
 const PIN_KEY = 'portfolio_admin_pin'
@@ -28,11 +28,32 @@ export default function Admin({ content, onSave, onClose, showToast }) {
   const [addingExp, setAddingExp] = useState(false)
   const [newExp, setNewExp] = useState({ company: '', role: '', initials: '', logo: null })
   const [ghForm, setGhForm] = useState({ token: '', owner: '', repo: '' })
+  const [tokenInfo, setTokenInfo] = useState(null)
+  const [tokenChecking, setTokenChecking] = useState(false)
   const pinRef = useRef()
 
   useEffect(() => {
     if (view === 'pin') pinRef.current?.focus()
   }, [view])
+
+  useEffect(() => {
+    if (view !== 'main') return
+    // Show cached expiry instantly, then refresh live
+    const cfg = getGithubConfig()
+    if (cfg?.tokenExpires) {
+      const date = new Date(cfg.tokenExpires.replace(' UTC', 'Z').replace(' ', 'T'))
+      const days = Math.ceil((date - Date.now()) / 86400000)
+      setTokenInfo({ expires: date, days })
+    }
+    checkToken()
+  }, [view])
+
+  async function checkToken() {
+    setTokenChecking(true)
+    const result = await getTokenExpiration()
+    setTokenInfo(result)
+    setTokenChecking(false)
+  }
 
   function submitPin(e) {
     e.preventDefault()
@@ -264,6 +285,50 @@ export default function Admin({ content, onSave, onClose, showToast }) {
         <div className="adm-header">
           <span className="adm-header-title">Admin Panel</span>
           <button className="adm-x" onClick={onClose}>✕</button>
+        </div>
+
+        <div className="token-bar">
+          {tokenInfo?.error === 'no-config' ? (
+            <span className="tb-text tb-neutral">GitHub not connected</span>
+          ) : tokenInfo?.error === 'invalid' ? (
+            <span className="tb-text tb-bad">
+              Token invalid or expired —{' '}
+              <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer">renew at GitHub</a>
+            </span>
+          ) : tokenInfo?.error ? (
+            <span className="tb-text tb-neutral">Could not reach GitHub</span>
+          ) : !tokenInfo ? (
+            <span className="tb-text tb-neutral">Checking token…</span>
+          ) : tokenInfo.expires === null ? (
+            <span className="tb-text tb-good">Token: no expiration set</span>
+          ) : tokenInfo.days <= 0 ? (
+            <span className="tb-text tb-bad">
+              Token expired —{' '}
+              <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer">renew at GitHub</a>
+            </span>
+          ) : tokenInfo.days <= 10 ? (
+            <span className="tb-text tb-bad">
+              Token expires in {tokenInfo.days} day{tokenInfo.days !== 1 ? 's' : ''} —{' '}
+              <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer">renew now</a>
+            </span>
+          ) : tokenInfo.days <= 30 ? (
+            <span className="tb-text tb-warn">
+              Token expires in {tokenInfo.days} days —{' '}
+              <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer">renew soon</a>
+            </span>
+          ) : (
+            <span className="tb-text tb-good">
+              Token valid · {tokenInfo.days} days remaining
+            </span>
+          )}
+          <button
+            className="tb-refresh"
+            onClick={checkToken}
+            disabled={tokenChecking}
+            title="Refresh token status"
+          >
+            {tokenChecking ? '…' : '↺'}
+          </button>
         </div>
 
         <div className="adm-tabs">

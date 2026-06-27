@@ -45,6 +45,29 @@ export async function fetchContentFromGithub() {
   return { content, sha: data.sha }
 }
 
+export async function getTokenExpiration() {
+  const config = getGithubConfig()
+  if (!config?.token) return { error: 'no-config' }
+
+  try {
+    const res = await fetch('https://api.github.com/user', {
+      headers: apiHeaders(config.token),
+    })
+    if (!res.ok) return { error: 'invalid' }
+
+    const header = res.headers.get('GitHub-Authentication-Token-Expiration')
+    if (!header) return { expires: null, days: null }
+
+    // Header format: "2025-01-01 00:00:00 UTC"
+    const date = new Date(header.replace(' UTC', 'Z').replace(' ', 'T'))
+    const days = Math.ceil((date - Date.now()) / 86400000)
+    saveGithubConfig({ ...config, tokenExpires: header })
+    return { expires: date, days }
+  } catch {
+    return { error: 'network' }
+  }
+}
+
 export async function saveContentToGithub(content) {
   const config = getGithubConfig()
   if (!config?.token || !config?.owner || !config?.repo) {

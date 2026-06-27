@@ -636,6 +636,25 @@ main { position: relative; z-index: 1; }
 }
 .adm-x:hover { background: #e2e8f0; }
 
+.token-bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 28px; flex-shrink: 0;
+  background: #f6f8fa; border-bottom: 1px solid rgba(0,0,0,0.08);
+  font-size: 0.78rem;
+}
+.tb-text { flex: 1; }
+.tb-text a { color: inherit; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.tb-good { color: #1a7f37; }
+.tb-warn { color: #9a6700; }
+.tb-bad { color: #cf222e; font-weight: 500; }
+.tb-neutral { color: #656d76; }
+.tb-refresh {
+  background: none; border: none; cursor: pointer; color: #656d76;
+  font-size: 14px; padding: 2px 6px; border-radius: 4px; line-height: 1; flex-shrink: 0;
+}
+.tb-refresh:hover:not(:disabled) { background: rgba(0,0,0,0.07); }
+.tb-refresh:disabled { opacity: 0.4; cursor: default; }
+
 .adm-tabs {
   display: flex; gap: 2px; padding: 12px 28px 0;
   border-bottom: 1.5px solid var(--border); flex-shrink: 0;
