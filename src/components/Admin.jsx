@@ -27,7 +27,7 @@ export default function Admin({ content, onSave, onClose, showToast }) {
   const [newProj, setNewProj] = useState({ title: '', description: '', stack: '', link: '' })
   const [addingExp, setAddingExp] = useState(false)
   const [newExp, setNewExp] = useState({ company: '', role: '', initials: '', logo: null })
-  const [ghForm, setGhForm] = useState({ token: '', owner: '', repo: '' })
+  const [ghForm, setGhForm] = useState({ token: '' })
   const [tokenInfo, setTokenInfo] = useState(null)
   const [tokenChecking, setTokenChecking] = useState(false)
   const pinRef = useRef()
@@ -39,12 +39,14 @@ export default function Admin({ content, onSave, onClose, showToast }) {
   useEffect(() => {
     if (view !== 'main') return
     // Show cached expiry instantly, then refresh live
-    const cfg = getGithubConfig()
-    if (cfg?.tokenExpires) {
-      const date = new Date(cfg.tokenExpires.replace(' UTC', 'Z').replace(' ', 'T'))
-      const days = Math.ceil((date - Date.now()) / 86400000)
-      setTokenInfo({ expires: date, days })
-    }
+    try {
+      const meta = JSON.parse(localStorage.getItem('portfolio_token_meta') || 'null')
+      if (meta?.expires) {
+        const date = new Date(meta.expires.replace(' UTC', 'Z').replace(' ', 'T'))
+        const days = Math.ceil((date - Date.now()) / 86400000)
+        setTokenInfo({ expires: date, days })
+      }
+    } catch { /* ignore */ }
     checkToken()
   }, [view])
 
@@ -70,7 +72,7 @@ export default function Admin({ content, onSave, onClose, showToast }) {
 
   function submitGithub(e) {
     e.preventDefault()
-    saveGithubConfig(ghForm)
+    saveGithubConfig({ token: ghForm.token })
     setView('main')
   }
 
@@ -221,15 +223,16 @@ export default function Admin({ content, onSave, onClose, showToast }) {
       <div className="adm-overlay">
         <div className="adm-modal">
           <div className="adm-header">
-            <span className="adm-header-title">Connect GitHub</span>
+            <span className="adm-header-title">GitHub Token</span>
             <button className="adm-x" onClick={onClose}>✕</button>
           </div>
           <div className="adm-body">
             <div className="setup-view">
-              <p className="setup-heading">One-time setup</p>
+              <p className="setup-heading">Enter your GitHub token</p>
               <p className="setup-desc">
-                Every save commits <code>content.json</code> to your GitHub repo
-                and Vercel auto-redeploys. Create a Personal Access Token at{' '}
+                Saves commit <code>content.json</code> to{' '}
+                <strong>tyresemosley8-art/Portfolio</strong> and Vercel auto-redeploys.
+                Create a Personal Access Token at{' '}
                 <strong>github.com → Settings → Developer settings → Personal access tokens</strong>{' '}
                 with <code>repo</code> scope.
               </p>
@@ -243,30 +246,11 @@ export default function Admin({ content, onSave, onClose, showToast }) {
                     required
                   />
                 </div>
-                <div className="fgroup">
-                  <label className="flabel">Your GitHub username</label>
-                  <input
-                    className="finput" placeholder="tyresemosley"
-                    value={ghForm.owner}
-                    onChange={e => setGhForm(p => ({ ...p, owner: e.target.value }))}
-                    required
-                  />
-                </div>
-                <div className="fgroup">
-                  <label className="flabel">Repo name</label>
-                  <span className="fhint">Create an empty repo on GitHub first</span>
-                  <input
-                    className="finput" placeholder="portfolio"
-                    value={ghForm.repo}
-                    onChange={e => setGhForm(p => ({ ...p, repo: e.target.value }))}
-                    required
-                  />
-                </div>
                 <div style={{ display: 'flex', gap: 10, paddingTop: 6 }}>
-                  <button type="submit" className="btn-primary">Connect & Continue</button>
+                  <button type="submit" className="btn-primary">Save & Continue</button>
                   <button
                     type="button" className="btn-sm"
-                    onClick={() => { saveGithubConfig({ token: '', owner: '', repo: '' }); setView('main') }}
+                    onClick={() => setView('main')}
                   >
                     Skip for now
                   </button>
