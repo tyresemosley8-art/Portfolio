@@ -39,7 +39,8 @@ function sanitize(obj) {
 }
 
 export default function App() {
-  const [content, setContent] = useState(null)
+  const [content, setContent] = useState(DEFAULT_CONTENT)
+  const [contentReady, setContentReady] = useState(false)
   const [adminOpen, setAdminOpen] = useState(false)
   const [openProject, setOpenProject] = useState(null)
   const [toast, setToast] = useState(null)
@@ -54,16 +55,22 @@ export default function App() {
           const clean = sanitize(result.content)
           setContent(clean)
           localStorage.setItem('portfolio_content', JSON.stringify(clean))
+          setContentReady(true)
           return
         }
       } catch { /* fall through */ }
 
       const cached = localStorage.getItem('portfolio_content')
       if (cached) {
-        try { setContent(sanitize(JSON.parse(cached))); return } catch { /* fall through */ }
+        try {
+          setContent(sanitize(JSON.parse(cached)))
+          setContentReady(true)
+          return
+        } catch { /* fall through */ }
       }
 
-      setContent(DEFAULT_CONTENT)
+      // Nothing fetched — defaults are already loaded
+      setContentReady(true)
     }
     load()
   }, [])
@@ -143,17 +150,9 @@ export default function App() {
     localStorage.setItem('portfolio_content', JSON.stringify(newContent))
   }
 
-  if (!content) {
-    return (
-      <div className="loading-screen">
-        <div className="loading-dot" />
-      </div>
-    )
-  }
-
   return (
     <>
-      <Intro />
+      <Intro contentReady={contentReady} />
       <TopoCanvas />
       <Cursor />
       <Nav name={content.hero.name} />

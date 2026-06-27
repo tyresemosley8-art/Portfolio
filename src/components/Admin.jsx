@@ -81,10 +81,11 @@ export default function Admin({ content, onSave, onClose, showToast }) {
       onSave(ec)
       showToast('Changes saved & deployed ✓')
       onClose()
-    } catch {
+    } catch (err) {
       onSave(ec)
       localStorage.setItem('portfolio_content', JSON.stringify(ec))
-      showToast('Saved locally — check GitHub config', 'warn')
+      const msg = err?.message || 'GitHub save failed — check config'
+      showToast(msg, 'error')
       setSaving(false)
     }
   }
