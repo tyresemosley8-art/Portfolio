@@ -25,7 +25,7 @@ export default function Admin({ content, onSave, onClose, showToast }) {
   const [editProjId, setEditProjId] = useState(null)
   const [newProj, setNewProj] = useState({ title: '', description: '', stack: '', link: '' })
   const [addingExp, setAddingExp] = useState(false)
-  const [newExp, setNewExp] = useState({ company: '', role: '', initials: '' })
+  const [newExp, setNewExp] = useState({ company: '', role: '', initials: '', logo: null })
   const [ghForm, setGhForm] = useState({ token: '', owner: '', repo: '' })
   const pinRef = useRef()
 
@@ -107,14 +107,22 @@ export default function Admin({ content, onSave, onClose, showToast }) {
       company: newExp.company.trim(),
       role: newExp.role.trim(),
       initials: newExp.initials.trim().slice(0, 3),
+      logo: newExp.logo || null,
     }
     setEc(prev => ({ ...prev, experience: [...(prev.experience || []), item] }))
-    setNewExp({ company: '', role: '', initials: '' })
+    setNewExp({ company: '', role: '', initials: '', logo: null })
     setAddingExp(false)
   }
 
   function delExperience(id) {
     setEc(prev => ({ ...prev, experience: (prev.experience || []).filter(e => e.id !== id) }))
+  }
+
+  function updateExpField(id, field, val) {
+    setEc(prev => ({
+      ...prev,
+      experience: (prev.experience || []).map(e => e.id === id ? { ...e, [field]: val } : e),
+    }))
   }
 
   function delProject(id) {
@@ -530,23 +538,38 @@ export default function Admin({ content, onSave, onClose, showToast }) {
               </p>
               <div className="proj-list">
                 {(ec.experience || []).map(item => (
-                  <div key={item.id} className="proj-item">
-                    <div
-                      style={{
-                        width: 36, height: 36, borderRadius: 8,
-                        background: 'var(--navy)',
+                  <div key={item.id} className="new-proj-form" style={{ gap: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{
+                        width: 44, height: 44, borderRadius: 10, flexShrink: 0, overflow: 'hidden',
+                        background: item.logo ? 'rgba(10,22,40,0.07)' : 'var(--navy)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        flexShrink: 0, fontSize: 10, fontWeight: 700, color: 'white',
-                      }}
-                    >
-                      {item.initials}
-                    </div>
-                    <div>
-                      <p className="proj-item-name">{item.company}</p>
-                      <p className="proj-item-stack">{item.role}</p>
-                    </div>
-                    <div className="proj-item-actions">
+                      }}>
+                        {item.logo
+                          ? <img src={item.logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 6 }} />
+                          : <span style={{ fontSize: 10, fontWeight: 700, color: 'white' }}>{item.initials}</span>
+                        }
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <p className="proj-item-name">{item.company}</p>
+                        <p className="proj-item-stack">{item.role}</p>
+                      </div>
                       <button className="btn-sm danger" onClick={() => delExperience(item.id)}>Delete</button>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <input
+                        type="file" accept="image/*"
+                        id={`exp-logo-${item.id}`} style={{ display: 'none' }}
+                        onChange={e => readFile(e.target.files[0], v => updateExpField(item.id, 'logo', v))}
+                      />
+                      <label htmlFor={`exp-logo-${item.id}`} className="upload-btn" style={{ fontSize: 12 }}>
+                        {item.logo ? '↺ Change Logo' : '+ Upload Logo'}
+                      </label>
+                      {item.logo && (
+                        <button className="btn-sm danger" onClick={() => updateExpField(item.id, 'logo', null)}>
+                          Remove Logo
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -560,9 +583,22 @@ export default function Admin({ content, onSave, onClose, showToast }) {
                   <input className="finput" placeholder="Role or title"
                     value={newExp.role}
                     onChange={e => setNewExp(p => ({ ...p, role: e.target.value }))} />
-                  <input className="finput" placeholder="Initials (max 3, e.g. WP)"
+                  <input className="finput" placeholder="Initials (max 3, e.g. WP — used if no logo)"
                     maxLength={3} value={newExp.initials}
                     onChange={e => setNewExp(p => ({ ...p, initials: e.target.value }))} />
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <input
+                      type="file" accept="image/*"
+                      id="new-exp-logo" style={{ display: 'none' }}
+                      onChange={e => readFile(e.target.files[0], v => setNewExp(p => ({ ...p, logo: v })))}
+                    />
+                    <label htmlFor="new-exp-logo" className="upload-btn" style={{ fontSize: 12 }}>
+                      {newExp.logo ? '↺ Change Logo' : '+ Upload Logo (optional)'}
+                    </label>
+                    {newExp.logo && (
+                      <img src={newExp.logo} alt="" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'contain', background: 'rgba(10,22,40,0.07)', padding: 4 }} />
+                    )}
+                  </div>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button className="btn-primary" onClick={addExperience} disabled={!newExp.company.trim()}>
                       Add Item

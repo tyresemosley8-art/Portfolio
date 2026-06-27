@@ -22,8 +22,11 @@ export default function Experience({ experience }) {
         <div className="marquee-track">
           {doubled.map((item, i) => (
             <div key={i} className="marquee-item">
-              <div className="marquee-logo">
-                <span className="marquee-initials">{item.initials}</span>
+              <div className={`marquee-logo${item.logo ? ' has-img' : ''}`}>
+                {item.logo
+                  ? <img src={item.logo} alt={item.company} className="marquee-logo-img" />
+                  : <span className="marquee-initials">{item.initials}</span>
+                }
               </div>
               <div className="marquee-info">
                 <p className="marquee-company">{item.company}</p>
