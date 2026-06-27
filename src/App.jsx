@@ -2,12 +2,14 @@ import { useState, useEffect, useRef } from 'react'
 import Nav from './components/Nav'
 import Hero from './components/Hero'
 import About from './components/About'
+import Experience from './components/Experience'
 import Projects from './components/Projects'
 import Resume from './components/Resume'
 import Admin from './components/Admin'
 import CaseStudy from './components/CaseStudy'
 import Quote from './components/Quote'
 import Cursor from './components/Cursor'
+import TopoCanvas from './components/TopoCanvas'
 import Toast from './components/Toast'
 import { fetchContentFromGithub } from './lib/github'
 import { DEFAULT_CONTENT } from './lib/defaultContent'
@@ -97,11 +99,13 @@ export default function App() {
 
   return (
     <>
+      <TopoCanvas />
       <Cursor />
       <Nav name={content.hero.name} />
       <main>
         <Hero hero={content.hero} profilePhoto={content.profilePhoto} />
         <About about={content.about} profilePhoto={content.profilePhoto} />
+        <Experience experience={content.experience} />
         <Projects
           projects={content.projects}
           heading={content.projectsHeading}

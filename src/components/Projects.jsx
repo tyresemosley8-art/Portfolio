@@ -39,8 +39,8 @@ export default function Projects({ projects, heading, onOpenProject }) {
                   View project ↗
                 </a>
               )}
-              <span className="proj-case-link">View Case Study →</span>
             </div>
+            <span className="proj-case-link">View Project →</span>
           </div>
         ))}
       </div>
