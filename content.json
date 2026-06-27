@@ -1,11 +1,18 @@
 {
   "hero": {
     "name": "Tyrese Mosley",
-    "subtitle": "Information Science Student · Tech Builder · Problem Solver"
+    "subtitle": "Information Science student building real tech, on track for a career in cybersecurity."
   },
   "about": {
-    "bio": "I'm Tyrese Mosley, an Information Science student with a passion for building technology that actually makes a difference. I love turning complex problems into clean, intuitive experiences — from full-stack web apps to data systems used by real organizations.",
-    "journey": "My journey started with a simple curiosity about how things work on the internet. That curiosity turned into late nights learning to code, eventually leading me to build real tools for nonprofits in Philadelphia. Every project teaches me something new, and every line of code is a step toward the kind of builder I want to be."
+    "heading": "Who I am",
+    "bio": "I'm Tyrese Mosley, an Information Science student with a passion for building technology that actually makes a difference. I love turning complex problems into clean, intuitive experiences, from full-stack web apps to data systems used by real organizations.",
+    "journey": "My journey started with a simple curiosity about how things work on the internet. That curiosity turned into late nights learning to code, eventually leading me to build real tools for nonprofits in Philadelphia. Every project teaches me something new, and every line of code is a step toward the kind of builder I want to be.",
+    "footer": "Philadelphia, PA · Posse Scholar · Information Science",
+    "photo": null
+  },
+  "quote": {
+    "verse": "Yet what we suffer now is nothing compared to the glory he will reveal to us later.",
+    "citation": "Romans 8:18 — NLT"
   },
   "projects": [
     {
@@ -21,7 +28,29 @@
         "Vercel"
       ],
       "image": null,
-      "link": null
+      "link": null,
+      "caseStudy": {
+        "hook": "",
+        "story": "",
+        "images": [
+          {
+            "src": null,
+            "caption": ""
+          },
+          {
+            "src": null,
+            "caption": ""
+          },
+          {
+            "src": null,
+            "caption": ""
+          },
+          {
+            "src": null,
+            "caption": ""
+          }
+        ]
+      }
     },
     {
       "id": "2",
@@ -35,7 +64,29 @@
         "Prisma"
       ],
       "image": null,
-      "link": null
+      "link": null,
+      "caseStudy": {
+        "hook": "",
+        "story": "",
+        "images": [
+          {
+            "src": null,
+            "caption": ""
+          },
+          {
+            "src": null,
+            "caption": ""
+          },
+          {
+            "src": null,
+            "caption": ""
+          },
+          {
+            "src": null,
+            "caption": ""
+          }
+        ]
+      }
     },
     {
       "id": "3",
@@ -48,9 +99,71 @@
         "CSS"
       ],
       "image": null,
-      "link": null
+      "link": null,
+      "caseStudy": {
+        "hook": "",
+        "story": "",
+        "images": [
+          {
+            "src": null,
+            "caption": ""
+          },
+          {
+            "src": null,
+            "caption": ""
+          },
+          {
+            "src": null,
+            "caption": ""
+          },
+          {
+            "src": null,
+            "caption": ""
+          }
+        ]
+      }
     }
   ],
+  "projectsHeading": "Things I've built",
+  "resumeHeading": "Download my resume",
   "profilePhoto": null,
-  "resume": null
+  "resume": null,
+  "experience": [
+    {
+      "id": "1",
+      "company": "We Love Philly",
+      "role": "Technology Project Lead",
+      "initials": "WP"
+    },
+    {
+      "id": "2",
+      "company": "University of Pittsburgh",
+      "role": "Information Science Student",
+      "initials": "UP"
+    },
+    {
+      "id": "3",
+      "company": "AWS",
+      "role": "Cloud Practitioner Certified",
+      "initials": "AWS"
+    },
+    {
+      "id": "4",
+      "company": "Google",
+      "role": "Cybersecurity Certificate",
+      "initials": "G"
+    },
+    {
+      "id": "5",
+      "company": "NICE Conference",
+      "role": "Cybersecurity Attendee",
+      "initials": "NC"
+    },
+    {
+      "id": "6",
+      "company": "1PHL Tech",
+      "role": "Conference Attendee",
+      "initials": "1P"
+    }
+  ]
 }
