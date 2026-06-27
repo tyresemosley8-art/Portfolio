@@ -546,7 +546,7 @@ export default function Admin({ content, onSave, onClose, showToast }) {
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}>
                         {item.logo
-                          ? <img src={item.logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 6 }} />
+                          ? <img src={item.logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                           : <span style={{ fontSize: 10, fontWeight: 700, color: 'white' }}>{item.initials}</span>
                         }
                       </div>
