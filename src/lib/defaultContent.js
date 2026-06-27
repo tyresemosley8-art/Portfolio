@@ -8,12 +8,18 @@ const EMPTY_IMAGES = [
 export const DEFAULT_CONTENT = {
   hero: {
     name: 'Tyrese Mosley',
-    subtitle: 'I build things that actually work for people who actually need them.',
+    subtitle: 'Information Science student building real tech — on track for a career in cybersecurity.',
   },
   about: {
     heading: 'Who I am',
     bio: "I'm Tyrese Mosley, an Information Science student with a passion for building technology that actually makes a difference. I love turning complex problems into clean, intuitive experiences — from full-stack web apps to data systems used by real organizations.",
     journey: "My journey started with a simple curiosity about how things work on the internet. That curiosity turned into late nights learning to code, eventually leading me to build real tools for nonprofits in Philadelphia. Every project teaches me something new, and every line of code is a step toward the kind of builder I want to be.",
+    footer: 'Philadelphia, PA · Posse Scholar · Information Science',
+    photo: null,
+  },
+  quote: {
+    verse: 'Yet what we suffer now is nothing compared to the glory he will reveal to us later.',
+    citation: 'Romans 8:18 — NLT',
   },
   projects: [
     {

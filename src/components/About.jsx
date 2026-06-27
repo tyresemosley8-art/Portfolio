@@ -1,11 +1,14 @@
 export default function About({ about, profilePhoto }) {
+  const photo = about.photo || profilePhoto
+  const footer = about.footer || 'Philadelphia, PA · Posse Scholar · Information Science'
+
   return (
     <section className="section-wrap bg-gray" id="about">
       <div className="section-inner">
         <div className="about-grid">
           <div className="reveal">
-            {profilePhoto ? (
-              <img src={profilePhoto} alt="Profile" className="about-photo" />
+            {photo ? (
+              <img src={photo} alt="Profile" className="about-photo" />
             ) : (
               <div className="about-photo-placeholder">
                 <span style={{ fontSize: 28, opacity: 0.3 }}>👤</span>
@@ -20,9 +23,7 @@ export default function About({ about, profilePhoto }) {
             </div>
             <p className="about-bio reveal reveal-d2">{about.bio}</p>
             <p className="about-journey reveal reveal-d3">{about.journey}</p>
-            <p className="about-footer reveal reveal-d4">
-              Philadelphia, PA &nbsp;·&nbsp; Posse Scholar &nbsp;·&nbsp; Information Science
-            </p>
+            <p className="about-footer reveal reveal-d4">{footer}</p>
           </div>
         </div>
       </div>

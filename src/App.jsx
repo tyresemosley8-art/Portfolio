@@ -111,7 +111,7 @@ export default function App() {
           heading={content.projectsHeading}
           onOpenProject={setOpenProject}
         />
-        <Quote />
+        <Quote quote={content.quote} />
         <Resume resume={content.resume} heading={content.resumeHeading} />
       </main>
 

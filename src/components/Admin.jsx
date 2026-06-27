@@ -258,7 +258,7 @@ export default function Admin({ content, onSave, onClose, showToast }) {
         </div>
 
         <div className="adm-tabs">
-          {['hero', 'about', 'projects', 'experience', 'resume'].map(t => (
+          {['hero', 'about', 'projects', 'experience', 'quote', 'resume'].map(t => (
             <button
               key={t}
               className={`adm-tab${tab === t ? ' on' : ''}`}
@@ -322,6 +322,29 @@ export default function Admin({ content, onSave, onClose, showToast }) {
                 <textarea className="ftextarea" rows={5}
                   value={ec.about.journey}
                   onChange={e => updateEc('about.journey', e.target.value)} />
+              </div>
+              <div className="fgroup">
+                <label className="flabel">Signature line</label>
+                <span className="fhint">Shown below the bio in small caps</span>
+                <input className="finput"
+                  value={ec.about.footer || ''}
+                  placeholder="Philadelphia, PA · Posse Scholar · Information Science"
+                  onChange={e => updateEc('about.footer', e.target.value)} />
+              </div>
+              <div className="fgroup">
+                <label className="flabel">About section photo</label>
+                <span className="fhint">Shown in the About grid (separate from hero photo)</span>
+                <input type="file" accept="image/*" id="about-photo-up" style={{ display: 'none' }}
+                  onChange={e => readFile(e.target.files[0], v => updateEc('about.photo', v))} />
+                <label htmlFor="about-photo-up" className="upload-btn" style={{ marginTop: 4 }}>
+                  {ec.about.photo ? '↺ Change About Photo' : '+ Upload About Photo'}
+                </label>
+                {ec.about.photo && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
+                    <img src={ec.about.photo} alt="" style={{ width: 64, height: 64, borderRadius: 10, objectFit: 'cover' }} />
+                    <button className="btn-sm danger" onClick={() => updateEc('about.photo', null)}>Remove</button>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -476,6 +499,26 @@ export default function Admin({ content, onSave, onClose, showToast }) {
                   + Add Project
                 </button>
               )}
+            </div>
+          )}
+
+          {/* ── QUOTE TAB ── */}
+          {tab === 'quote' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div className="fgroup">
+                <label className="flabel">Verse text</label>
+                <textarea className="ftextarea" rows={4}
+                  value={ec.quote?.verse || ''}
+                  placeholder="Yet what we suffer now is nothing compared to the glory he will reveal to us later."
+                  onChange={e => setEc(p => ({ ...p, quote: { ...(p.quote || {}), verse: e.target.value } }))} />
+              </div>
+              <div className="fgroup">
+                <label className="flabel">Citation</label>
+                <input className="finput"
+                  value={ec.quote?.citation || ''}
+                  placeholder="Romans 8:18 — NLT"
+                  onChange={e => setEc(p => ({ ...p, quote: { ...(p.quote || {}), citation: e.target.value } }))} />
+              </div>
             </div>
           )}
 
