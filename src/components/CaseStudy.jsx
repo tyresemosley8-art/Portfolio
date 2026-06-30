@@ -78,11 +78,7 @@ export default function CaseStudy({ project, onClose }) {
   const paragraphs = cs.story ? cs.story.split(/\n\n+/).filter(p => p.trim()) : []
   const images = (cs.images || []).filter(img => img?.src)
 
-  // Pair each paragraph 1:1 with an image; leftover images go to extra row
-  const pairs = paragraphs.map((para, i) => ({ para, img: images[i] || null }))
-  const extraImages = images.slice(paragraphs.length)
-
-  const isEmpty = pairs.length === 0 && extraImages.length === 0
+  const isEmpty = paragraphs.length === 0 && images.length === 0
 
   return (
     <>
@@ -108,34 +104,21 @@ export default function CaseStudy({ project, onClose }) {
               </p>
             ) : (
               <>
-                {pairs.map((block, i) => (
-                  <div key={i} className={`case-row cs-reveal${block.img ? '' : ' case-row-noimg'}`}>
-                    <p className="case-para">{block.para}</p>
-                    {block.img && (
-                      <div className="case-thumb-wrap">
-                        <img
-                          src={block.img.src}
-                          alt={block.img.caption || ''}
-                          className="case-thumb"
-                          onClick={e => openLightbox(images, images.indexOf(block.img), e.currentTarget)}
-                        />
-                        {block.img.caption && (
-                          <p className="case-thumb-caption">{block.img.caption}</p>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                <div className="case-text-col">
+                  {paragraphs.map((para, i) => (
+                    <p key={i} className="case-para cs-reveal">{para}</p>
+                  ))}
+                </div>
 
-                {extraImages.length > 0 && (
-                  <div className="case-extra-imgs cs-reveal">
-                    {extraImages.map((img, i) => (
+                {images.length > 0 && (
+                  <div className="case-img-col">
+                    {images.map((img, i) => (
                       <div key={i} className="case-thumb-wrap">
                         <img
                           src={img.src}
                           alt={img.caption || ''}
                           className="case-thumb"
-                          onClick={e => openLightbox(images, images.indexOf(img), e.currentTarget)}
+                          onClick={e => openLightbox(images, i, e.currentTarget)}
                         />
                         {img.caption && (
                           <p className="case-thumb-caption">{img.caption}</p>
