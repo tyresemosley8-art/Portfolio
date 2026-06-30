@@ -76,7 +76,7 @@ export default function CaseStudy({ project, onClose }) {
             )
           ) : (
             <p className="case-para cs-reveal" style={{ color: 'var(--slate)', fontStyle: 'italic' }}>
-              No case study written yet. Open the admin panel (Shift+T, then Shift+M) to add your project story.
+              Case study coming soon.
             </p>
           )}
         </div>

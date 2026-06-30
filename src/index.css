@@ -690,6 +690,14 @@ main { position: relative; z-index: 1; }
 }
 .adm-save-btn:hover { background: #162440; transform: translateY(-1px); }
 .adm-save-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.save-error-line {
+  font-size: 0.78rem; color: #cf222e; margin-bottom: 8px; flex-basis: 100%;
+}
+.save-retry-btn {
+  background: none; border: none; color: #cf222e; font-weight: 700;
+  cursor: pointer; text-decoration: underline; font-size: inherit; padding: 0;
+}
+.save-retry-btn:hover { opacity: 0.75; }
 
 /* PIN view */
 .pin-view {

@@ -16,6 +16,9 @@ export default function Admin({ content, onSave, onClose, showToast }) {
   const [pinShake, setPinShake] = useState(false)
   const [ec, setEc] = useState(() => JSON.parse(JSON.stringify(content)))
   const [saving, setSaving] = useState(false)
+  const [savingMsg, setSavingMsg] = useState('')
+  const [saveError, setSaveError] = useState('')
+  const savingTimerRef = useRef(null)
   const [tab, setTab] = useState('hero')
   const [addingProj, setAddingProj] = useState(false)
   const [editProjId, setEditProjId] = useState(null)
@@ -73,23 +76,67 @@ export default function Admin({ content, onSave, onClose, showToast }) {
 
   async function handleSave() {
     setSaving(true)
-    try {
-      await saveContentToGithub(ec)
-      onSave(ec)
-      showToast('Changes saved & deployed ✓')
-      onClose()
-    } catch (err) {
-      onSave(ec)
-      localStorage.setItem('portfolio_content', JSON.stringify(ec))
-      const msg = err?.message || 'GitHub save failed — check config'
-      showToast(msg, 'error')
-      setSaving(false)
+    setSaveError('')
+    setSavingMsg('Saving...')
+
+    // After 5s with no result, show a waiting message
+    clearTimeout(savingTimerRef.current)
+    savingTimerRef.current = setTimeout(() => setSavingMsg('Still saving, please wait...'), 5000)
+
+    let lastErr
+    for (let attempt = 0; attempt < 2; attempt++) {
+      if (attempt === 1) {
+        setSavingMsg('Retrying...')
+        await new Promise(r => setTimeout(r, 1200))
+      }
+      try {
+        await saveContentToGithub(ec)
+        clearTimeout(savingTimerRef.current)
+        onSave(ec)
+        showToast('Changes saved & deployed ✓')
+        onClose()
+        return
+      } catch (err) {
+        lastErr = err
+      }
     }
+
+    // Both attempts failed
+    clearTimeout(savingTimerRef.current)
+    onSave(ec)
+    localStorage.setItem('portfolio_content', JSON.stringify(ec))
+    const msg = lastErr?.message || 'Save failed — please try again'
+    setSaveError(msg)
+    showToast(msg, 'error')
+    setSaving(false)
+    setSavingMsg('')
   }
 
   function readFile(file, cb) {
+    // PDFs and non-images pass through as-is
+    if (!file.type.startsWith('image/')) {
+      const reader = new FileReader()
+      reader.onload = e => cb(e.target.result)
+      reader.readAsDataURL(file)
+      return
+    }
+    // Images: resize to max 1200px wide, compress to 80% JPEG
     const reader = new FileReader()
-    reader.onload = e => cb(e.target.result)
+    reader.onload = e => {
+      const img = new Image()
+      img.onload = () => {
+        const MAX = 1200
+        let w = img.width
+        let h = img.height
+        if (w > MAX) { h = Math.round(h * MAX / w); w = MAX }
+        const canvas = document.createElement('canvas')
+        canvas.width = w
+        canvas.height = h
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h)
+        cb(canvas.toDataURL('image/jpeg', 0.8))
+      }
+      img.src = e.target.result
+    }
     reader.readAsDataURL(file)
   }
 
@@ -747,8 +794,14 @@ export default function Admin({ content, onSave, onClose, showToast }) {
               Reconnect GitHub
             </button>
           </div>
+          {saveError && (
+            <p className="save-error-line">
+              {saveError}{' '}
+              <button className="save-retry-btn" onClick={handleSave}>Retry</button>
+            </p>
+          )}
           <button className="adm-save-btn" onClick={handleSave} disabled={saving}>
-            {saving ? '⟳ Saving…' : '↑ Save & Deploy'}
+            {saving ? savingMsg : '↑ Save & Deploy'}
           </button>
         </div>
       </div>
