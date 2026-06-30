@@ -1,8 +1,31 @@
-import { useState, useEffect, useRef } from 'react'
+﻿import { useState, useEffect, useRef } from 'react'
 import { getGithubConfig, saveGithubConfig, clearGithubConfig, saveContentToGithub, getTokenExpiration, restoreFromBackup } from '../lib/github'
 
 const DOT = String.fromCharCode(183)
 const PIN_KEY = 'portfolio_admin_pin'
+
+function grammarClean(s) {
+  if (typeof s !== 'string') return s
+  if (s.startsWith('data:') || s.startsWith('http') || s.startsWith('blob:') || s.length > 8000) return s
+  return s
+    .replace(/  +/g, ' ')
+    .replace(/([,;:])([^\s\n])/g, '$1 $2')
+    .replace(/([.!?])([a-zA-Z])/g, '$1 $2')
+    .replace(/!{2,}/g, '!')
+    .replace(/\.{2}(?!\.)/g, '.')
+    .split('\n').map(line => line.trim()).join('\n')
+    .trim()
+}
+function grammarCleanDeep(obj) {
+  if (typeof obj === 'string') return grammarClean(obj)
+  if (Array.isArray(obj)) return obj.map(grammarCleanDeep)
+  if (obj && typeof obj === 'object') {
+    const r = {}
+    for (const k of Object.keys(obj)) r[k] = grammarCleanDeep(obj[k])
+    return r
+  }
+  return obj
+}
 const DEFAULT_PIN = '1234'
 const EMPTY_CS_IMAGES = Array.from({ length: 10 }, () => ({ src: null, caption: '' }))
 
@@ -79,12 +102,17 @@ export default function Admin({ content, onSave, onClose, showToast }) {
   async function handleSave() {
     setSaving(true)
     setSaveError('')
-    setSavingMsg('Saving...')
 
-    // After 5s with no result, show a waiting message
+    const cleaned = grammarCleanDeep(ec)
+    const grammarChanged = JSON.stringify(cleaned) !== JSON.stringify(ec)
+    if (grammarChanged) setEc(cleaned)
+
+    setSavingMsg(grammarChanged ? 'Auto-correcting grammar...' : 'Saving...')
+
     clearTimeout(savingTimerRef.current)
     savingTimerRef.current = setTimeout(() => setSavingMsg('Still saving, please wait...'), 5000)
 
+    const toSave = grammarChanged ? cleaned : ec
     let lastErr
     for (let attempt = 0; attempt < 2; attempt++) {
       if (attempt === 1) {
@@ -92,10 +120,10 @@ export default function Admin({ content, onSave, onClose, showToast }) {
         await new Promise(r => setTimeout(r, 1200))
       }
       try {
-        await saveContentToGithub(ec)
+        await saveContentToGithub(toSave)
         clearTimeout(savingTimerRef.current)
-        onSave(ec)
-        showToast('Changes saved & deployed ✓')
+        onSave(toSave)
+        showToast(grammarChanged ? 'Grammar cleaned & deployed ✓' : 'Changes saved & deployed ✓')
         onClose()
         return
       } catch (err) {
@@ -103,10 +131,9 @@ export default function Admin({ content, onSave, onClose, showToast }) {
       }
     }
 
-    // Both attempts failed
     clearTimeout(savingTimerRef.current)
-    onSave(ec)
-    localStorage.setItem('portfolio_content', JSON.stringify(ec))
+    onSave(toSave)
+    localStorage.setItem('portfolio_content', JSON.stringify(toSave))
     const msg = lastErr?.message || 'Save failed — please try again'
     setSaveError(msg)
     showToast(msg, 'error')
@@ -814,21 +841,23 @@ export default function Admin({ content, onSave, onClose, showToast }) {
               Reconnect GitHub
             </button>
           </div>
-          {saveError && (
-            <p className="save-error-line">
-              {saveError}{' '}
-              <button className="save-retry-btn" onClick={handleSave}>Retry</button>
-            </p>
-          )}
-          {restoreError && (
-            <p className="save-error-line">{restoreError}</p>
-          )}
-          <button className="adm-save-btn" onClick={handleSave} disabled={saving || restoring}>
-            {saving ? savingMsg : '↑ Save & Deploy'}
-          </button>
-          <button className="adm-restore-btn" onClick={handleRestore} disabled={saving || restoring}>
-            {restoring ? 'Restoring...' : '↩ Restore previous version'}
-          </button>
+          <div className="adm-footer-right">
+            {saveError && (
+              <p className="save-error-line">
+                {saveError}{' '}
+                <button className="save-retry-btn" onClick={handleSave}>Retry</button>
+              </p>
+            )}
+            {restoreError && (
+              <p className="save-error-line">{restoreError}</p>
+            )}
+            <button className="adm-save-btn" onClick={handleSave} disabled={saving || restoring}>
+              {saving ? savingMsg : '↑ Save & Deploy'}
+            </button>
+            <button className="adm-restore-btn" onClick={handleRestore} disabled={saving || restoring}>
+              {restoring ? 'Restoring...' : '↩ Restore previous version'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

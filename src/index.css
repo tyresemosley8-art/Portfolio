@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    TYRESE MOSLEY — PORTFOLIO
    ============================================================ */
 
@@ -500,25 +500,128 @@ main { position: relative; z-index: 1; }
 
 .case-stack { display: flex; flex-wrap: wrap; gap: 8px; }
 
+.case-container { position: relative; z-index: 1; }
+
 .case-story {
   margin-top: 60px;
-  display: flex; flex-direction: column; gap: 36px;
+  display: flex; flex-direction: column; gap: 40px;
 }
 
 .case-para {
   font-size: 17px; line-height: 1.95; color: var(--text);
   letter-spacing: 0.012em; word-spacing: 0.06em;
+  flex: 1;
 }
 
-.case-img-wrap { margin: 8px 0; }
-.case-img {
-  width: 100%; border-radius: 16px;
-  box-shadow: var(--shadow-card);
+/* ── Paragraph + thumbnail row ── */
+.case-row {
+  display: flex; align-items: flex-start; gap: 24px;
 }
-.case-img-caption {
-  font-size: 13px; color: var(--slate); margin-top: 12px;
+.case-row-noimg .case-para { flex: unset; }
+
+.case-thumb-wrap {
+  width: 200px; flex-shrink: 0;
+  display: flex; flex-direction: column; gap: 6px;
+}
+
+.case-thumb {
+  width: 200px; height: auto;
+  border-radius: 8px;
+  border: 0.5px solid rgba(10,22,40,0.12);
+  cursor: zoom-in;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  display: block;
+}
+.case-thumb:hover { transform: scale(1.03); }
+
+.case-thumb-caption {
+  font-size: 11px; color: var(--slate);
+  font-style: italic; line-height: 1.4;
+}
+
+/* Extra images (beyond paragraph count) */
+.case-extra-imgs {
+  display: flex; flex-wrap: wrap; gap: 16px;
+}
+
+/* ── Lightbox ── */
+.lb-overlay {
+  position: fixed; inset: 0; z-index: 900;
+  display: flex; align-items: center; justify-content: center;
+  animation: lbBgIn 0.35s ease forwards;
+}
+.lb-overlay.closing { animation: lbBgOut 0.35s ease forwards; pointer-events: none; }
+@keyframes lbBgIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes lbBgOut { from { opacity: 1; } to { opacity: 0; } }
+
+.lb-bg {
+  position: absolute; inset: 0;
+  background: rgba(10,22,40,0.85);
+}
+
+.lb-img-wrap {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center;
+  max-width: 90vw;
+  animation: lbOpen 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+.lb-img-wrap.closing {
+  animation: lbClose 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+.lb-img-wrap.slide-from-right {
+  animation: lbFromRight 0.25s ease forwards;
+}
+.lb-img-wrap.slide-from-left {
+  animation: lbFromLeft 0.25s ease forwards;
+}
+
+@keyframes lbOpen {
+  from { transform: translate(var(--lb-tx, 0px), var(--lb-ty, 0px)) scale(var(--lb-scale, 0.15)); opacity: 0.5; }
+  to   { transform: translate(0, 0) scale(1); opacity: 1; }
+}
+@keyframes lbClose {
+  from { transform: scale(1); opacity: 1; }
+  to   { transform: scale(0.88); opacity: 0; }
+}
+@keyframes lbFromRight {
+  from { transform: translateX(48px); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+@keyframes lbFromLeft {
+  from { transform: translateX(-48px); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+
+.lb-img {
+  max-width: 88vw; max-height: 80vh;
+  border-radius: 12px; object-fit: contain;
+  display: block;
+}
+
+.lb-caption {
+  margin-top: 12px; font-size: 13px; color: rgba(255,255,255,0.72);
   font-style: italic; text-align: center;
 }
+
+.lb-close {
+  position: absolute; top: 20px; right: 24px; z-index: 2;
+  background: rgba(255,255,255,0.12); border: none; color: white;
+  width: 36px; height: 36px; border-radius: 50%; font-size: 14px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.lb-close:hover { background: rgba(255,255,255,0.22); }
+
+.lb-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 2;
+  background: rgba(255,255,255,0.12); border: none; color: white;
+  width: 44px; height: 44px; border-radius: 50%; font-size: 26px; line-height: 1;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.lb-arrow:hover { background: rgba(255,255,255,0.22); }
+.lb-prev { left: 24px; }
+.lb-next { right: 24px; }
 
 .case-footer {
   margin-top: 72px; padding-top: 48px;
@@ -681,6 +784,9 @@ main { position: relative; z-index: 1; }
   transition: color 0.15s, background 0.15s;
 }
 .adm-meta-btn:hover { color: var(--navy); background: var(--light-gray); }
+.adm-footer-right {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+}
 .adm-save-btn {
   background: var(--navy); color: white;
   font-size: 13.5px; font-weight: 600;
@@ -699,11 +805,13 @@ main { position: relative; z-index: 1; }
 }
 .save-retry-btn:hover { opacity: 0.75; }
 .adm-restore-btn {
-  width: 100%; padding: 9px 16px; border: 1.5px solid var(--slate);
-  background: none; color: var(--slate); border-radius: 8px; cursor: pointer;
-  font-size: 0.82rem; font-weight: 500; transition: background 0.15s, color 0.15s;
+  background: none; border: none; cursor: pointer;
+  font-size: 0.72rem; color: var(--slate);
+  text-decoration: underline; text-underline-offset: 2px;
+  padding: 2px 0; margin-top: 6px; align-self: center;
+  transition: color 0.15s;
 }
-.adm-restore-btn:hover:not(:disabled) { background: rgba(74,85,104,0.08); }
+.adm-restore-btn:hover:not(:disabled) { color: var(--navy); }
 .adm-restore-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* PIN view */
@@ -937,6 +1045,12 @@ main { position: relative; z-index: 1; }
   .nav-panel { padding: 72px 32px; }
   .case-container { padding: 80px 24px 80px; }
   .case-back-btn { top: 16px; left: 16px; font-size: 12px; padding: 7px 12px; }
+  .case-row { flex-direction: column; }
+  .case-thumb-wrap { width: 100%; }
+  .case-thumb { width: 100%; }
+  .lb-arrow { width: 36px; height: 36px; font-size: 20px; }
+  .lb-prev { left: 10px; }
+  .lb-next { right: 10px; }
   .quote-section { padding: 80px 28px; }
   .contact-section { padding: 80px 28px 60px; }
   .contact-links { gap: 44px; }
