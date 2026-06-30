@@ -504,7 +504,7 @@ main { position: relative; z-index: 1; }
 
 .case-story {
   margin-top: 60px;
-  display: flex; flex-direction: column; gap: 40px;
+  display: flex; flex-direction: column; gap: 16px;
 }
 
 .case-para {
@@ -515,7 +515,7 @@ main { position: relative; z-index: 1; }
 
 /* ── Paragraph + thumbnail row ── */
 .case-row {
-  display: flex; align-items: flex-start; gap: 24px;
+  display: flex; align-items: center; gap: 24px;
 }
 .case-row-noimg .case-para { flex: unset; }
 
