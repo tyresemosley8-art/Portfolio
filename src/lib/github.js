@@ -3,12 +3,15 @@ const REPO_OWNER = 'tyresemosley8-art'
 const REPO_NAME  = 'Portfolio'
 const BRANCH     = 'master'
 
-const RAW_URL = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/content.json`
-const API_URL = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/content.json`
+const RAW_URL        = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/content.json`
+const API_URL        = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/content.json`
+const BACKUP_RAW_URL = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/content.backup.json`
+const BACKUP_API_URL = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/content.backup.json`
 
 const TOKEN_KEY    = 'portfolio_github_token'
 const TOKEN_META   = 'portfolio_token_meta'   // stores { expires: string }
 const SHA_KEY      = 'portfolio_content_sha'
+const BACKUP_SHA_KEY = 'portfolio_backup_sha'
 
 // ── Token storage ─────────────────────────────────────────────
 export function getToken() {
@@ -93,6 +96,68 @@ export async function getTokenExpiration() {
   }
 }
 
+// ── Backup helpers ────────────────────────────────────────────
+async function saveBackup(token, currentBase64) {
+  if (!currentBase64) return
+  const cleanBase64 = currentBase64.replace(/\n/g, '')
+
+  let backupSha = localStorage.getItem(BACKUP_SHA_KEY)
+  if (!backupSha) {
+    try {
+      const r = await fetch(BACKUP_API_URL, { headers: apiHeaders(token) })
+      if (r.ok) {
+        const d = await r.json()
+        backupSha = d.sha
+        localStorage.setItem(BACKUP_SHA_KEY, backupSha)
+      }
+    } catch { /* ignore */ }
+  }
+
+  async function doPut(sha) {
+    return fetch(BACKUP_API_URL, {
+      method: 'PUT',
+      headers: apiHeaders(token),
+      body: JSON.stringify({
+        message: 'Backup content.json before update',
+        content: cleanBase64,
+        ...(sha ? { sha } : {}),
+      }),
+    })
+  }
+
+  try {
+    let r = await doPut(backupSha)
+    if (r.status === 409 || r.status === 422) {
+      // SHA mismatch — fetch fresh and retry once
+      const shaRes = await fetch(BACKUP_API_URL, { headers: apiHeaders(token) })
+      if (shaRes.ok) {
+        const d = await shaRes.json()
+        backupSha = d.sha
+        localStorage.setItem(BACKUP_SHA_KEY, backupSha)
+        r = await doPut(backupSha)
+      }
+    }
+    if (r.ok) {
+      const d = await r.json()
+      if (d.content?.sha) localStorage.setItem(BACKUP_SHA_KEY, d.content.sha)
+      console.log('[GitHub backup] Backup saved successfully')
+    } else {
+      console.warn('[GitHub backup] Backup write failed (non-critical):', r.status)
+    }
+  } catch (e) {
+    console.warn('[GitHub backup] Backup error (non-critical):', e)
+  }
+}
+
+export async function restoreFromBackup() {
+  const res = await fetch(BACKUP_RAW_URL, { cache: 'no-cache' })
+  if (!res.ok) throw new Error('No backup found — save at least once to create a backup')
+  const backupContent = await res.json()
+  // saveContentToGithub will back up the current content before overwriting
+  await saveContentToGithub(backupContent)
+  return backupContent
+}
+
 // ── Write: API with token ─────────────────────────────────────
 export async function saveContentToGithub(content) {
   const token = getToken()
@@ -117,6 +182,8 @@ export async function saveContentToGithub(content) {
     sha = shaData.sha
     localStorage.setItem(SHA_KEY, sha)
     console.log('[GitHub save] SHA:', sha.slice(0, 8) + '...')
+    // Back up the current content before overwriting
+    await saveBackup(token, shaData.content || '')
   } else if (shaRes.status === 404) {
     console.log('[GitHub save] File does not exist — creating fresh')
   } else if (shaRes.status === 401) {

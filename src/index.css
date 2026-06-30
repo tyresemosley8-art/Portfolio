@@ -698,6 +698,13 @@ main { position: relative; z-index: 1; }
   cursor: pointer; text-decoration: underline; font-size: inherit; padding: 0;
 }
 .save-retry-btn:hover { opacity: 0.75; }
+.adm-restore-btn {
+  width: 100%; padding: 9px 16px; border: 1.5px solid var(--slate);
+  background: none; color: var(--slate); border-radius: 8px; cursor: pointer;
+  font-size: 0.82rem; font-weight: 500; transition: background 0.15s, color 0.15s;
+}
+.adm-restore-btn:hover:not(:disabled) { background: rgba(74,85,104,0.08); }
+.adm-restore-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* PIN view */
 .pin-view {

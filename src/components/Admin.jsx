@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { getGithubConfig, saveGithubConfig, clearGithubConfig, saveContentToGithub, getTokenExpiration } from '../lib/github'
+import { getGithubConfig, saveGithubConfig, clearGithubConfig, saveContentToGithub, getTokenExpiration, restoreFromBackup } from '../lib/github'
 
 const DOT = String.fromCharCode(183)
 const PIN_KEY = 'portfolio_admin_pin'
@@ -19,6 +19,8 @@ export default function Admin({ content, onSave, onClose, showToast }) {
   const [savingMsg, setSavingMsg] = useState('')
   const [saveError, setSaveError] = useState('')
   const savingTimerRef = useRef(null)
+  const [restoring, setRestoring] = useState(false)
+  const [restoreError, setRestoreError] = useState('')
   const [tab, setTab] = useState('hero')
   const [addingProj, setAddingProj] = useState(false)
   const [editProjId, setEditProjId] = useState(null)
@@ -110,6 +112,24 @@ export default function Admin({ content, onSave, onClose, showToast }) {
     showToast(msg, 'error')
     setSaving(false)
     setSavingMsg('')
+  }
+
+  async function handleRestore() {
+    if (!window.confirm('Restore the previous version? This will overwrite current content with the last backup.')) return
+    setRestoring(true)
+    setRestoreError('')
+    try {
+      const restored = await restoreFromBackup()
+      onSave(restored)
+      showToast('Previous version restored ✓')
+      onClose()
+    } catch (err) {
+      const msg = err?.message || 'Restore failed — no backup available'
+      setRestoreError(msg)
+      showToast(msg, 'error')
+    } finally {
+      setRestoring(false)
+    }
   }
 
   function readFile(file, cb) {
@@ -800,8 +820,14 @@ export default function Admin({ content, onSave, onClose, showToast }) {
               <button className="save-retry-btn" onClick={handleSave}>Retry</button>
             </p>
           )}
-          <button className="adm-save-btn" onClick={handleSave} disabled={saving}>
+          {restoreError && (
+            <p className="save-error-line">{restoreError}</p>
+          )}
+          <button className="adm-save-btn" onClick={handleSave} disabled={saving || restoring}>
             {saving ? savingMsg : '↑ Save & Deploy'}
+          </button>
+          <button className="adm-restore-btn" onClick={handleRestore} disabled={saving || restoring}>
+            {restoring ? 'Restoring...' : '↩ Restore previous version'}
           </button>
         </div>
       </div>
