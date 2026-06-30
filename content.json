@@ -17,7 +17,7 @@
   "projects": [
     {
       "id": "1",
-      "title": "WLP Youth Tracker",
+      "title": "We Love Philly Youth Tracker",
       "description": "Internal student lifecycle tracking platform for a Philadelphia nonprofit. Replaces fragmented spreadsheets and Airtable with a single source of truth, tracking students from application through alumni engagement.",
       "stack": [
         "Next.js",
