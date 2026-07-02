@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect, useRef } from 'react'
-import { getGithubConfig, saveGithubConfig, clearGithubConfig, saveContentToGithub, getTokenExpiration, restoreFromBackup } from '../lib/github'
+import { getGithubConfig, saveGithubConfig, clearGithubConfig, saveContentToGithub, getTokenExpiration, restoreFromBackup, uploadVideoToGithub } from '../lib/github'
 
 const DOT = String.fromCharCode(183)
 const PIN_KEY = 'portfolio_admin_pin'
@@ -44,6 +44,11 @@ export default function Admin({ content, onSave, onClose, showToast }) {
   const savingTimerRef = useRef(null)
   const [restoring, setRestoring] = useState(false)
   const [restoreError, setRestoreError] = useState('')
+  const [vidUrlInput, setVidUrlInput] = useState({})   // { [projId]: string }
+  const [vidUploading, setVidUploading] = useState({}) // { [projId]: boolean }
+  const [vidProgress, setVidProgress] = useState({})   // { [projId]: number }
+  const [vidError, setVidError] = useState({})         // { [projId]: string }
+  const vidCancelRef = useRef({})                       // { [projId]: fn }
   const [tab, setTab] = useState('hero')
   const [addingProj, setAddingProj] = useState(false)
   const [editProjId, setEditProjId] = useState(null)
@@ -207,7 +212,7 @@ export default function Admin({ content, onSave, onClose, showToast }) {
       stack: newProj.stack.split(',').map(s => s.trim()).filter(Boolean),
       image: null,
       link: newProj.link.trim() || null,
-      caseStudy: { hook: '', story: '', images: JSON.parse(JSON.stringify(EMPTY_CS_IMAGES)) },
+      caseStudy: { hook: '', story: '', images: JSON.parse(JSON.stringify(EMPTY_CS_IMAGES)), videos: [] },
     }
     setEc(prev => ({ ...prev, projects: [...prev.projects, p] }))
     setNewProj({ title: '', description: '', stack: '', link: '' })
@@ -272,6 +277,58 @@ export default function Admin({ content, onSave, onClose, showToast }) {
         return { ...p, caseStudy: { ...(p.caseStudy || {}), images: imgs } }
       }),
     }))
+  }
+
+  function updateProjVideos(projId, videos) {
+    setEc(prev => ({
+      ...prev,
+      projects: prev.projects.map(p =>
+        p.id !== projId ? p
+          : { ...p, caseStudy: { ...(p.caseStudy || {}), videos } }
+      ),
+    }))
+  }
+
+  function addVideoUrl(projId) {
+    const url = (vidUrlInput[projId] || '').trim()
+    if (!url) return
+    const videos = [...(ec.projects.find(p => p.id === projId)?.caseStudy?.videos || [])]
+    videos.push({ id: Date.now().toString(), title: '', url })
+    updateProjVideos(projId, videos)
+    setVidUrlInput(prev => ({ ...prev, [projId]: '' }))
+  }
+
+  async function uploadVideo(projId, file) {
+    if (!file) return
+    setVidUploading(prev => ({ ...prev, [projId]: true }))
+    setVidProgress(prev => ({ ...prev, [projId]: 0 }))
+    setVidError(prev => ({ ...prev, [projId]: '' }))
+    try {
+      const url = await uploadVideoToGithub(
+        file,
+        pct => setVidProgress(prev => ({ ...prev, [projId]: pct })),
+        cancel => { vidCancelRef.current[projId] = cancel },
+      )
+      const videos = [...(ec.projects.find(p => p.id === projId)?.caseStudy?.videos || [])]
+      const name = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ')
+      videos.push({ id: Date.now().toString(), title: name, url })
+      updateProjVideos(projId, videos)
+    } catch (err) {
+      setVidError(prev => ({ ...prev, [projId]: err.message || 'Upload failed' }))
+    } finally {
+      setVidUploading(prev => ({ ...prev, [projId]: false }))
+    }
+  }
+
+  function removeVideo(projId, vidId) {
+    const videos = (ec.projects.find(p => p.id === projId)?.caseStudy?.videos || []).filter(v => v.id !== vidId)
+    updateProjVideos(projId, videos)
+  }
+
+  function updateVideoField(projId, vidId, field, val) {
+    const videos = (ec.projects.find(p => p.id === projId)?.caseStudy?.videos || [])
+      .map(v => v.id === vidId ? { ...v, [field]: val } : v)
+    updateProjVideos(projId, videos)
   }
 
   // ── PIN View ──────────────────────────────────────────────
@@ -598,6 +655,76 @@ export default function Admin({ content, onSave, onClose, showToast }) {
                             />
                           </div>
                         ))}
+                      </div>
+
+                      {/* ── Videos section ── */}
+                      <div className="cs-admin-section">
+                        <p className="cs-admin-label">Videos</p>
+
+                        {/* Existing videos */}
+                        {(p.caseStudy?.videos || []).map(vid => (
+                          <div key={vid.id} className="cs-vid-item">
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                              <span className="fhint" style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {vid.url}
+                              </span>
+                              <button className="btn-sm danger" onClick={() => removeVideo(p.id, vid.id)}>Remove</button>
+                            </div>
+                            <input
+                              className="finput"
+                              placeholder="Title (optional)"
+                              value={vid.title || ''}
+                              onChange={e => updateVideoField(p.id, vid.id, 'title', e.target.value)}
+                            />
+                          </div>
+                        ))}
+
+                        {/* Paste URL */}
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 6 }}>
+                          <input
+                            className="finput"
+                            placeholder="YouTube, Vimeo, or direct video URL"
+                            value={vidUrlInput[p.id] || ''}
+                            onChange={e => setVidUrlInput(prev => ({ ...prev, [p.id]: e.target.value }))}
+                            onKeyDown={e => e.key === 'Enter' && addVideoUrl(p.id)}
+                            style={{ flex: 1 }}
+                          />
+                          <button
+                            className="btn-sm"
+                            onClick={() => addVideoUrl(p.id)}
+                            disabled={!(vidUrlInput[p.id] || '').trim()}
+                          >
+                            Add URL
+                          </button>
+                        </div>
+
+                        {/* File upload */}
+                        {vidUploading[p.id] ? (
+                          <div className="vid-upload-progress">
+                            <div className="vid-upload-bar" style={{ width: `${vidProgress[p.id] || 0}%` }} />
+                            <span className="vid-upload-label">{vidProgress[p.id] || 0}% — uploading to GitHub…</span>
+                            <button
+                              className="btn-sm"
+                              style={{ marginLeft: 8, flexShrink: 0 }}
+                              onClick={() => vidCancelRef.current[p.id]?.()}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <input
+                              type="file" accept="video/*"
+                              id={`vid-up-${p.id}`} style={{ display: 'none' }}
+                              onChange={e => uploadVideo(p.id, e.target.files[0])}
+                            />
+                            <label htmlFor={`vid-up-${p.id}`} className="upload-btn" style={{ fontSize: 12, marginTop: 4 }}>
+                              + Upload video file
+                            </label>
+                          </>
+                        )}
+                        {vidError[p.id] && <p className="save-error-line">{vidError[p.id]}</p>}
+                        <p className="fhint" style={{ marginTop: 4 }}>Uploaded files are stored as GitHub Release assets (up to 2GB)</p>
                       </div>
 
                       <button className="btn-primary" style={{ marginTop: 8 }} onClick={() => setEditProjId(null)}>

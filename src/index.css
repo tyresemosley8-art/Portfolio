@@ -543,6 +543,128 @@ main { position: relative; z-index: 1; }
   font-style: italic; line-height: 1.4;
 }
 
+/* ── Case study videos ── */
+.case-videos {
+  margin-top: 48px;
+  display: flex; flex-direction: column; gap: 36px;
+}
+.case-video-item {}
+.case-video-title {
+  font-size: 15px; font-weight: 600; color: var(--navy);
+  margin-bottom: 14px; letter-spacing: -0.01em;
+}
+.case-video-embed-wrap {
+  position: relative; width: 100%; padding-bottom: 56.25%; /* 16:9 */
+  border-radius: 12px; overflow: hidden; background: #000;
+}
+.case-video-embed {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  border: none; display: block;
+}
+
+/* ── Custom video player ── */
+.vp-wrap {
+  position: relative; background: #000;
+  border-radius: 12px; overflow: hidden;
+  user-select: none;
+}
+.vp-video {
+  display: block; width: 100%; max-height: 70vh;
+  object-fit: contain;
+}
+.vp-spinner {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 32px; height: 32px;
+  border: 3px solid rgba(255,255,255,0.2);
+  border-top-color: white; border-radius: 50%;
+  animation: vpSpin 0.7s linear infinite; z-index: 2;
+}
+@keyframes vpSpin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+.vp-controls {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 24px 14px 12px;
+  background: linear-gradient(to top, rgba(0,0,0,0.72) 0%, transparent 100%);
+  opacity: 0; transition: opacity 0.22s ease;
+}
+.vp-ctrl-visible .vp-controls { opacity: 1; }
+
+.vp-seek {
+  -webkit-appearance: none; appearance: none;
+  display: block; width: 100%; height: 4px;
+  margin-bottom: 8px; border-radius: 2px; cursor: pointer;
+  background: linear-gradient(to right, white var(--p, 0%), rgba(255,255,255,0.28) var(--p, 0%));
+  transition: height 0.15s;
+}
+.vp-seek::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 13px; height: 13px;
+  border-radius: 50%; background: white; cursor: pointer;
+  transition: transform 0.15s;
+}
+.vp-seek:hover { height: 5px; }
+.vp-seek:hover::-webkit-slider-thumb { transform: scale(1.2); }
+.vp-seek::-moz-range-thumb {
+  width: 13px; height: 13px; border-radius: 50%;
+  background: white; border: none; cursor: pointer;
+}
+
+.vp-bar {
+  display: flex; align-items: center; gap: 10px;
+}
+.vp-btn {
+  background: none; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0;
+  transition: background 0.15s;
+}
+.vp-btn:hover { background: rgba(255,255,255,0.15); }
+
+.vp-vol-group {
+  display: flex; align-items: center; gap: 4px;
+}
+.vp-vol {
+  -webkit-appearance: none; appearance: none;
+  width: 64px; height: 3px; border-radius: 2px; cursor: pointer;
+  background: linear-gradient(to right, white var(--p, 100%), rgba(255,255,255,0.28) var(--p, 100%));
+}
+.vp-vol::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 11px; height: 11px;
+  border-radius: 50%; background: white; cursor: pointer;
+}
+.vp-vol::-moz-range-thumb {
+  width: 11px; height: 11px; border-radius: 50%;
+  background: white; border: none; cursor: pointer;
+}
+
+.vp-time {
+  font-size: 11.5px; color: rgba(255,255,255,0.82);
+  font-feature-settings: 'tnum'; letter-spacing: 0.02em;
+  flex: 1; text-align: left;
+}
+.vp-fs { margin-left: auto; }
+
+/* ── Admin video section ── */
+.cs-vid-item {
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 12px; display: flex; flex-direction: column; gap: 7px;
+  margin-bottom: 8px;
+}
+.vid-upload-progress {
+  position: relative; height: 32px; border-radius: 7px;
+  background: var(--light-gray); overflow: hidden;
+  display: flex; align-items: center; padding: 0 10px;
+  margin-top: 4px;
+}
+.vid-upload-bar {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  background: var(--navy); opacity: 0.12;
+  transition: width 0.25s ease;
+}
+.vid-upload-label {
+  font-size: 12px; color: var(--slate); position: relative; z-index: 1;
+}
+
 /* ── Lightbox ── */
 .lb-overlay {
   position: fixed; inset: 0; z-index: 900;

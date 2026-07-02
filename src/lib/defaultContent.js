@@ -30,6 +30,7 @@ export const DEFAULT_CONTENT = {
         hook: '',
         story: '',
         images: JSON.parse(JSON.stringify(EMPTY_IMAGES)),
+        videos: [],
       },
     },
     {
@@ -43,6 +44,7 @@ export const DEFAULT_CONTENT = {
         hook: '',
         story: '',
         images: JSON.parse(JSON.stringify(EMPTY_IMAGES)),
+        videos: [],
       },
     },
     {
@@ -56,6 +58,7 @@ export const DEFAULT_CONTENT = {
         hook: '',
         story: '',
         images: JSON.parse(JSON.stringify(EMPTY_IMAGES)),
+        videos: [],
       },
     },
   ],

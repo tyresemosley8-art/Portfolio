@@ -1,5 +1,15 @@
 ﻿import { useState, useEffect, useRef } from 'react'
 import TopoCanvas from './TopoCanvas'
+import VideoPlayer from './VideoPlayer'
+
+function getEmbedInfo(url) {
+  if (!url) return null
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/)
+  if (yt) return { type: 'youtube', src: `https://www.youtube.com/embed/${yt[1]}?rel=0&modestbranding=1` }
+  const vm = url.match(/vimeo\.com\/(\d+)/)
+  if (vm) return { type: 'vimeo', src: `https://player.vimeo.com/video/${vm[1]}?byline=0&portrait=0&title=0` }
+  return { type: 'direct', src: url }
+}
 
 export default function CaseStudy({ project, onClose }) {
   const [closing, setClosing] = useState(false)
@@ -130,6 +140,33 @@ export default function CaseStudy({ project, onClose }) {
               </>
             )}
           </div>
+
+          {/* ── Videos ── */}
+          {(cs.videos || []).filter(v => v.url).length > 0 && (
+            <div className="case-videos">
+              {cs.videos.filter(v => v.url).map((video, i) => {
+                const embed = getEmbedInfo(video.url)
+                return (
+                  <div key={i} className="case-video-item cs-reveal">
+                    {video.title && <p className="case-video-title">{video.title}</p>}
+                    {embed.type === 'direct' ? (
+                      <VideoPlayer src={embed.src} />
+                    ) : (
+                      <div className="case-video-embed-wrap">
+                        <iframe
+                          src={embed.src}
+                          className="case-video-embed"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                          allowFullScreen
+                          title={video.title || `Video ${i + 1}`}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
 
           {project.link && (
             <div className="case-footer cs-reveal">

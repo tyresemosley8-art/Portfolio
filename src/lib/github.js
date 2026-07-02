@@ -149,6 +149,75 @@ async function saveBackup(token, currentBase64) {
   }
 }
 
+// ── Video upload: GitHub Release assets ──────────────────────
+const RELEASES_API = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases`
+
+async function getOrCreateMediaRelease(token) {
+  const res = await fetch(`${RELEASES_API}/tags/portfolio-media`, { headers: apiHeaders(token) })
+  if (res.ok) return res.json()
+  const createRes = await fetch(RELEASES_API, {
+    method: 'POST',
+    headers: apiHeaders(token),
+    body: JSON.stringify({
+      tag_name: 'portfolio-media',
+      name: 'Portfolio Media',
+      body: 'Video assets for portfolio case studies.',
+      prerelease: true,
+    }),
+  })
+  if (!createRes.ok) {
+    const err = await createRes.json().catch(() => ({}))
+    throw new Error(`Could not create media release: ${err.message || createRes.status}`)
+  }
+  return createRes.json()
+}
+
+export async function uploadVideoToGithub(file, onProgress, onCancel) {
+  const token = getToken()
+  if (!token) throw new Error('No GitHub token — open Settings and enter your token')
+
+  const release = await getOrCreateMediaRelease(token)
+
+  // Remove existing asset with same filename to avoid duplicates
+  const existing = (release.assets || []).find(a => a.name === file.name)
+  if (existing) {
+    await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/assets/${existing.id}`, {
+      method: 'DELETE', headers: apiHeaders(token),
+    }).catch(() => {})
+  }
+
+  const uploadUrl = `https://uploads.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases/${release.id}/assets?name=${encodeURIComponent(file.name)}`
+
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    if (onCancel) onCancel(() => { xhr.abort(); reject(new Error('Upload cancelled')) })
+
+    xhr.open('POST', uploadUrl)
+    xhr.setRequestHeader('Authorization', `token ${token}`)
+    xhr.setRequestHeader('Accept', 'application/vnd.github.v3+json')
+    xhr.setRequestHeader('Content-Type', file.type || 'video/mp4')
+
+    xhr.upload.addEventListener('progress', e => {
+      if (e.lengthComputable && onProgress) onProgress(Math.round(e.loaded / e.total * 100))
+    })
+    xhr.addEventListener('load', () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try { resolve(JSON.parse(xhr.responseText).browser_download_url) }
+        catch { reject(new Error('Invalid response from GitHub')) }
+      } else {
+        let msg = `Upload failed (${xhr.status})`
+        try { msg = JSON.parse(xhr.responseText).message || msg } catch {}
+        if (xhr.status === 401) msg = 'Token rejected — check your GitHub token'
+        if (xhr.status === 422) msg = 'File already exists or name is invalid'
+        reject(new Error(msg))
+      }
+    })
+    xhr.addEventListener('error', () => reject(new Error('Network error during upload')))
+    xhr.addEventListener('abort', () => reject(new Error('Upload cancelled')))
+    xhr.send(file)
+  })
+}
+
 export async function restoreFromBackup() {
   const res = await fetch(BACKUP_RAW_URL, { cache: 'no-cache' })
   if (!res.ok) throw new Error('No backup found — save at least once to create a backup')
