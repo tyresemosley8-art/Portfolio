@@ -87,8 +87,9 @@ export default function CaseStudy({ project, onClose }) {
   const cs = project.caseStudy || {}
   const paragraphs = cs.story ? cs.story.split(/\n\n+/).filter(p => p.trim()) : []
   const images = (cs.images || []).filter(img => img?.src)
+  const videos = (cs.videos || []).filter(v => v.url)
 
-  const isEmpty = paragraphs.length === 0 && images.length === 0
+  const isEmpty = paragraphs.length === 0 && images.length === 0 && videos.length === 0
 
   return (
     <>
@@ -142,9 +143,9 @@ export default function CaseStudy({ project, onClose }) {
           </div>
 
           {/* ── Videos ── */}
-          {(cs.videos || []).filter(v => v.url).length > 0 && (
+          {videos.length > 0 && (
             <div className="case-videos">
-              {cs.videos.filter(v => v.url).map((video, i) => {
+              {videos.map((video, i) => {
                 const embed = getEmbedInfo(video.url)
                 return (
                   <div key={i} className="case-video-item cs-reveal">
